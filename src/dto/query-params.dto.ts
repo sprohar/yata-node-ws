@@ -1,4 +1,5 @@
-import { IsOptional } from 'class-validator';
+import { Prisma } from '@prisma/client';
+import { IsEnum, IsOptional } from 'class-validator';
 
 export class QueryParams {
   @IsOptional()
@@ -6,4 +7,8 @@ export class QueryParams {
 
   @IsOptional()
   take?: number;
+
+  @IsOptional()
+  @IsEnum(Prisma.SortOrder)
+  dir?: string;
 }
