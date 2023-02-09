@@ -1,7 +1,5 @@
 # Yet Another To-Do App (YATA)
 
----
-
 Yet another to-do app created with JavaScript, specifically [NestJS](https://nestjs.com/).
 
 ## Getting Started
