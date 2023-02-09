@@ -1,0 +1,85 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model Project {
+    id        Int       @id @default(autoincrement())
+    name      String
+    ownerId   String?   @map("owner_id")
+    favorite  Boolean   @default(false)
+    view      View      @default(LIST)
+    createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+    updatedAt DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+    // relations
+    tasks     Task[]
+    sections  Section[]
+
+    @@map("projects")
+}
+
+model Task {
+    id          Int          @id @default(autoincrement())
+    name        String
+    description String?
+    dueDate     DateTime?
+    priority    Priority     @default(NONE)
+    createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz
+    updatedAt   DateTime     @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+    // relations
+    Project     Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+    projectId   Int          @map("project_id")
+    Section     Section?     @relation(fields: [sectionId], references: [id])
+    sectionId   Int?         @map("section_id")
+    TaggedTask  TaggedTask[]
+
+    @@map("tasks")
+}
+
+model Section {
+    id        Int     @id @default(autoincrement())
+    name      String
+    // relations
+    tasks     Task[]
+    Project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+    projectId Int     @map("project_id")
+
+    @@map("sections")
+}
+
+model Tag {
+    id         Int          @id @default(autoincrement())
+    name       String
+    // relations
+    TaggedTask TaggedTask[]
+}
+
+model TaggedTask {
+    tagId  Int  @map("tag_id")
+    Tag    Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+    taskId Int  @map("task_id")
+    Task   Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+    @@id([taskId, tagId])
+    @@map("tagged_tasks")
+}
+
+enum View {
+    LIST
+    KANBAN
+
+    @@map("view")
+}
+
+enum Priority {
+    NONE
+    LOW
+    MEDIUM
+    HIGH
+
+    @@map("priority")
+}

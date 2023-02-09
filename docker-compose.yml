@@ -1,0 +1,30 @@
+version: '3.9'
+services:
+  dev-db:
+    image: postgres:15
+    restart: always
+    ports:
+      - 5434:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password_123
+      POSTGRES_DB: yata
+    networks:
+      - yata
+  test-db:
+    image: postgres:15
+    ports:
+      - 5435:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password_123
+      POSTGRES_DB: yata
+    networks:
+      - yata
+  redis:
+    image: redis
+    restart: always
+    ports:
+      - 6379:6379
+networks:
+  yata:
