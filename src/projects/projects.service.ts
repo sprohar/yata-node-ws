@@ -41,10 +41,10 @@ export class ProjectsService {
     const data = await this.prisma.project.findMany(params);
 
     return {
-      data,
-      count,
       pageIndex: params.skip,
       pageSize: params.take,
+      count,
+      data,
     };
   }
 
