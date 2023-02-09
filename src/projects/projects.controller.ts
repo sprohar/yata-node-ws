@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -13,8 +12,8 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { CreateProjectDto } from './dto/create-project.dto';
+import { ProjectsQueryParams } from './dto/projects-query-params.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { ProjectsService } from './projects.service';
 
@@ -28,10 +27,10 @@ export class ProjectsController {
   }
 
   @Get()
-  async findAll(@Query('skip') skip: number, @Query('take') take: number) {
+  async findAll(@Query() query: ProjectsQueryParams) {
     return await this.projectsService.findAll({
-      skip,
-      take,
+      skip: query.skip ?? 0,
+      take: query.take ?? 30,
       where: {},
     });
   }
