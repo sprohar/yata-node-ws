@@ -8,61 +8,84 @@ datasource db {
 }
 
 model Project {
-    id        Int       @id @default(autoincrement())
-    name      String
-    ownerId   String?   @map("owner_id")
-    favorite  Boolean   @default(false)
-    view      View      @default(LIST)
-    createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
-    updatedAt DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+    id         Int        @id @default(autoincrement())
+    name       String     @db.VarChar(128)
+    ownerId    String?    @map("owner_id")
+    favorite   Boolean    @default(false)
+    view       View       @default(LIST)
+    createdAt  DateTime   @default(now()) @map("created_at") @db.Timestamptz
+    updatedAt  DateTime   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
     // relations
-    tasks     Task[]
-    sections  Section[]
+    tasks      Task[]
+    sections   Section[]
+    activities Activity[]
 
     @@map("projects")
 }
 
 model Task {
-    id          Int          @id @default(autoincrement())
-    name        String
-    description String?
-    dueDate     DateTime?
-    priority    Priority     @default(NONE)
-    createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz
-    updatedAt   DateTime     @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+    id           Int            @id @default(autoincrement())
+    name         String         @db.VarChar(256)
+    description  String?        @db.VarChar(8192)
+    dueDate      DateTime?      @map("due_date")
+    priority     Priority       @default(NONE)
+    createdAt    DateTime       @default(now()) @map("created_at") @db.Timestamptz
+    updatedAt    DateTime       @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
     // relations
-    Project     Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
-    projectId   Int          @map("project_id")
-    Section     Section?     @relation(fields: [sectionId], references: [id])
-    sectionId   Int?         @map("section_id")
-    TaggedTask  TaggedTask[]
+    Project      Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+    projectId    Int            @map("project_id")
+    section      Section?       @relation(fields: [sectionId], references: [id])
+    sectionId    Int?           @map("section_id")
+    labeledTasks LabeledTasks[]
+    activity     Activity?
+    // subtasks
+    subtasks     Task[]         @relation("subtasks")
+    task         Task?          @relation("subtasks", fields: [taskId], references: [id])
+    taskId       Int?           @map("parent_id")
 
+    @@index([name])
     @@map("tasks")
+}
+
+model Activity {
+    id        Int      @id @default(autoincrement())
+    message   String   @db.VarChar(1024)
+    createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+    // one-to-one -> Task:Activity
+    taskId    Int      @unique @map("task_id")
+    task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+    projectId Int     @map("project_id")
+    project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+    @@map("activity_logs")
 }
 
 model Section {
     id        Int     @id @default(autoincrement())
-    name      String
+    name      String  @db.VarChar(64)
     // relations
     tasks     Task[]
-    Project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+    project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
     projectId Int     @map("project_id")
 
     @@map("sections")
 }
 
-model Tag {
-    id         Int          @id @default(autoincrement())
-    name       String
+model Label {
+    id           Int            @id @default(autoincrement())
+    name         String         @db.VarChar(32)
     // relations
-    TaggedTask TaggedTask[]
+    labeledTasks LabeledTasks[]
+
+    @@map("tags")
 }
 
-model TaggedTask {
-    tagId  Int  @map("tag_id")
-    Tag    Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
-    taskId Int  @map("task_id")
-    Task   Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+model LabeledTasks {
+    tagId  Int   @map("tag_id")
+    label  Label @relation(fields: [tagId], references: [id], onDelete: Cascade)
+    taskId Int   @map("task_id")
+    task   Task  @relation(fields: [taskId], references: [id], onDelete: Cascade)
 
     @@id([taskId, tagId])
     @@map("tagged_tasks")
