@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { View } from '@prisma/client';
 import {
   IsString,
@@ -10,19 +11,23 @@ import {
 import { Project } from '../entities/project.entity';
 
 export class CreateProjectDto {
+  @ApiProperty()
   @IsString()
   @IsNotEmpty()
   @MaxLength(Project.Name.MAX_LENGTH)
   name: string;
 
+  @ApiProperty()
   @IsOptional()
   @IsBoolean()
   favorite?: boolean;
 
+  @ApiProperty({ enum: View })
   @IsEnum(View)
   @IsOptional()
   view?: View;
 
+  @ApiProperty()
   @IsOptional()
   @IsString()
   userId?: string;
