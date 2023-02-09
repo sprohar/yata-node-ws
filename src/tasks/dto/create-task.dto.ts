@@ -3,22 +3,25 @@ import {
   IsEnum,
   IsISO8601,
   IsNotEmpty,
-  IsNumberString,
+  IsNumber,
   IsOptional,
+  IsString,
   MaxLength,
 } from 'class-validator';
 import { Task } from '../entities/task.entity';
 
 export class CreateTaskDto {
   @IsNotEmpty()
+  @IsString()
   @MaxLength(Task.Name.MAX_LENGTH)
   name: string;
 
   @IsNotEmpty()
-  @IsNumberString()
+  @IsNumber()
   projectId: number;
 
   @IsOptional()
+  @IsString()
   @MaxLength(Task.Description.MAX_LENGTH)
   description?: string;
 
