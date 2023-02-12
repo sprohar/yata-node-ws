@@ -18,6 +18,8 @@ import { CreateTaskDto } from './dto/create-task.dto';
 import { TasksQueryParams } from './dto/tasks-query-params.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { TasksService } from './tasks.service';
+import { TasksChronoQueryParamsDto } from './dto/tasks-chrono-query-params.dto';
+import { Task } from './entities/task.entity';
 
 @ApiTags('Tasks')
 @Controller('tasks')
@@ -35,11 +37,10 @@ export class TasksController {
 
   @Get()
   async findAll(@Query() query: TasksQueryParams) {
-    // query.projectId = Number.parseInt(query.projectId, 10);
     const skip = query.skip ?? 0;
     const take = query.take ?? 30;
     const orderBy = {};
-    orderBy[`${query.orderBy ?? 'createAt'}`] =
+    orderBy[`${query.orderBy ?? Task.OrderBy.DEFAULT}`] =
       query.dir ?? Prisma.SortOrder.asc;
 
     let where: Prisma.TaskWhereInput = {
@@ -60,6 +61,26 @@ export class TasksController {
         priority: query.priority,
       };
     }
+
+    return await this.tasksService.findAll({
+      skip,
+      take,
+      where,
+      orderBy,
+    });
+  }
+
+  @Get('chrono')
+  async filterByDate(@Query() query: TasksChronoQueryParamsDto) {
+    const skip = query.skip ?? 0;
+    const take = query.take ?? 30;
+    const orderBy = {};
+    orderBy[`${query.orderBy ?? Task.OrderBy.DEFAULT}`] =
+      query.dir ?? Prisma.SortOrder.asc;
+
+    let where: Prisma.TaskWhereInput = {
+      projectId: +query.projectId,
+    };
     if (query.start && query.end) {
       where = {
         ...where,

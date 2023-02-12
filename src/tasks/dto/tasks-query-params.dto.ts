@@ -1,8 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Priority, Prisma } from '@prisma/client';
+import { Priority } from '@prisma/client';
 import {
   IsEnum,
-  IsISO8601,
   IsNotEmpty,
   IsNumberString,
   IsOptional,
@@ -31,16 +30,6 @@ export class TasksQueryParams extends QueryParams {
   @IsOptional()
   @IsEnum(Priority)
   priority?: Priority;
-
-  @ApiProperty()
-  @IsOptional()
-  @IsISO8601()
-  start?: Date;
-
-  @ApiProperty()
-  @IsOptional()
-  @IsISO8601()
-  end?: Date;
 
   @ApiProperty()
   @IsOptional()

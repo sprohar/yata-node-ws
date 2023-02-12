@@ -13,6 +13,7 @@ export namespace Task {
     NAME = 'name',
     PRIORITY = 'priority',
     DUE_DATE = 'dueDate',
-    INCEPTION = 'createdAt'
+    INCEPTION = 'createdAt',
+    DEFAULT = 'createdAt'
   }
 }
