@@ -8,24 +8,24 @@ datasource db {
 }
 
 model Project {
-    id         Int        @id @default(autoincrement())
-    name       String     @db.VarChar(128)
-    ownerId    String?    @map("owner_id")
-    favorite   Boolean    @default(false)
-    view       View       @default(LIST)
-    createdAt  DateTime   @default(now()) @map("created_at") @db.Timestamptz
-    updatedAt  DateTime   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+    id          Int        @id @default(autoincrement()) @map("project_id")
+    name        String     @map("project_name") @db.VarChar(128)
+    ownerId     String?    @map("owner_id")
+    isImportant Boolean    @default(false) @map("is_important")
+    view        View       @default(LIST)
+    createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamptz
+    updatedAt   DateTime   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
     // relations
-    tasks      Task[]
-    sections   Section[]
-    activities Activity[]
+    tasks       Task[]
+    sections    Section[]
+    activities  Activity[]
 
-    @@map("projects")
+    @@map("project")
 }
 
 model Task {
-    id           Int            @id @default(autoincrement())
-    name         String         @db.VarChar(256)
+    id           Int            @id @default(autoincrement()) @map("task_id")
+    name         String         @map("task_name") @db.VarChar(256)
     description  String?        @db.VarChar(8192)
     dueDate      DateTime?      @map("due_date")
     priority     Priority       @default(NONE)
@@ -44,11 +44,11 @@ model Task {
     taskId       Int?           @map("parent_id")
 
     @@index([name])
-    @@map("tasks")
+    @@map("task")
 }
 
 model Activity {
-    id        Int      @id @default(autoincrement())
+    id        Int      @id @default(autoincrement()) @map("activity_id")
     message   String   @db.VarChar(1024)
     createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
     // one-to-one -> Task:Activity
@@ -58,37 +58,37 @@ model Activity {
     projectId Int     @map("project_id")
     project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
-    @@map("activity_logs")
+    @@map("activity")
 }
 
 model Section {
-    id        Int     @id @default(autoincrement())
-    name      String  @db.VarChar(64)
+    id        Int     @id @default(autoincrement()) @map("section_id")
+    name      String  @map("section_name") @db.VarChar(64)
     // relations
     tasks     Task[]
     project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
     projectId Int     @map("project_id")
 
-    @@map("sections")
+    @@map("section")
 }
 
 model Label {
-    id           Int            @id @default(autoincrement())
-    name         String         @db.VarChar(32)
+    id           Int            @id @default(autoincrement()) @map("label_id")
+    name         String         @map("label_name") @db.VarChar(32)
     // relations
     labeledTasks LabeledTasks[]
 
-    @@map("tags")
+    @@map("label")
 }
 
 model LabeledTasks {
-    tagId  Int   @map("tag_id")
-    label  Label @relation(fields: [tagId], references: [id], onDelete: Cascade)
+    labelId  Int   @map("label_id")
+    label  Label @relation(fields: [labelId], references: [id], onDelete: Cascade)
     taskId Int   @map("task_id")
     task   Task  @relation(fields: [taskId], references: [id], onDelete: Cascade)
 
-    @@id([taskId, tagId])
-    @@map("tagged_tasks")
+    @@id([taskId, labelId])
+    @@map("labeled_task")
 }
 
 enum View {

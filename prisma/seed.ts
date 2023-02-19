@@ -5,6 +5,14 @@ const main = async () => {
   const projects = await prisma.project.create({
     data: {
       name: 'Yata API',
+      sections: {
+        create: [
+          { name: 'To-Do'},
+          { name: 'In Progress'},
+          { name: 'Testing'},
+          { name: 'Complete'},
+        ]
+      }
     },
   });
 
