@@ -8,8 +8,8 @@ import {
   NotFoundException,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
-  Put,
   Query,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger/dist';
@@ -31,47 +31,42 @@ export class ProjectsController {
   @Get()
   async findAll(@Query() query: ProjectsQueryParams) {
     return await this.projectsService.findAll({
-      skip: query.skip ?? 0,
-      take: query.take ?? 30,
+      skip: query.skip,
+      take: query.take,
       where: {},
     });
   }
 
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number) {
-    try {
-      return await this.projectsService.findOne(id);
-    } catch (error) {
-      if (error.code === 'P2025') {
-        throw new NotFoundException();
-      }
+    const project = await this.projectsService.findOne(id);
+    if (!project) {
+      throw new NotFoundException();
     }
+    return project;
   }
 
-  @Put(':id')
+  @Patch(':id')
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateProjectDto: UpdateProjectDto,
   ) {
-    try {
-      return await this.projectsService.update(id, updateProjectDto);
-    } catch (error) {
+    const project = await this.projectsService.update(id, updateProjectDto);
+    if (!project) {
       throw new NotFoundException();
-      // if (error instanceof PrismaClientKnownRequestError) {
-      //   if (error.code === 'P2025') {
-      //   }
-      // }
     }
+
+    return project;
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id', ParseIntPipe) id: number) {
-    try {
-      await this.projectsService.remove(id);
-      return HttpStatus.NO_CONTENT;
-    } catch (error) {
+    const project = await this.projectsService.remove(id);
+    if (!project) {
       throw new NotFoundException();
     }
+
+    return HttpStatus.NO_CONTENT;
   }
 }

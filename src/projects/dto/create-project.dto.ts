@@ -20,7 +20,7 @@ export class CreateProjectDto {
   @ApiProperty()
   @IsOptional()
   @IsBoolean()
-  favorite?: boolean;
+  isImportant?: boolean;
 
   @ApiProperty({ enum: View })
   @IsEnum(View)
@@ -30,5 +30,5 @@ export class CreateProjectDto {
   @ApiProperty()
   @IsOptional()
   @IsString()
-  userId?: string;
+  ownerId?: string;
 }

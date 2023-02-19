@@ -9,7 +9,7 @@ import { UpdateProjectDto } from './dto/update-project.dto';
 export class ProjectsService {
   constructor(private prisma: PrismaService) {}
 
-  async create(createProjectDto: CreateProjectDto) {
+  async create(createProjectDto: CreateProjectDto): Promise<Project> {
     return this.prisma.project.create({
       data: createProjectDto,
     });
@@ -38,6 +38,8 @@ export class ProjectsService {
       where: params.where,
     });
 
+    params.skip = +params.skip;
+    params.take = +params.take;
     const data = await this.prisma.project.findMany(params);
 
     return {
@@ -48,13 +50,22 @@ export class ProjectsService {
     };
   }
 
-  async findOne(id: number) {
-    return this.prisma.project.findUniqueOrThrow({
-      where: { id },
+  async findOne(id: number): Promise<Project> {
+    return this.prisma.project.findFirst({
+      where: {
+        id,
+      },
     });
   }
 
-  async update(id: number, updateProjectDto: UpdateProjectDto) {
+  async update(
+    id: number,
+    updateProjectDto: UpdateProjectDto,
+  ): Promise<Project> {
+    if (!(await this.exists(id))) {
+      return null;
+    }
+
     return this.prisma.project.update({
       where: {
         id,
@@ -63,9 +74,17 @@ export class ProjectsService {
     });
   }
 
-  async remove(id: number) {
+  async remove(id: number): Promise<Project> {
+    if (!(await this.exists(id))) {
+      return null;
+    }
+
     return this.prisma.project.delete({
       where: { id },
     });
+  }
+
+  async exists(projectId: number): Promise<boolean> {
+    return (await this.prisma.project.count({ where: { id: projectId } })) != 0;
   }
 }
