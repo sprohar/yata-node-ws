@@ -11,27 +11,22 @@ import { QueryParams } from '../../dto/query-params.dto';
 import { Task } from '../entities/task.entity';
 
 export class TasksQueryParams extends QueryParams {
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsNumberString()
-  projectId: number;
-
-  @ApiProperty({ enum: Task.OrderBy })
+  @ApiProperty({ enum: Task.OrderBy, required: false })
   @IsOptional()
   @IsEnum(Task.OrderBy)
   orderBy?: Task.OrderBy;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   @IsOptional()
   @MaxLength(Task.Name.MAX_LENGTH)
   name?: string;
 
-  @ApiProperty({ enum: Priority })
+  @ApiProperty({ enum: Priority, required: false })
   @IsOptional()
   @IsEnum(Priority)
   priority?: Priority;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   @IsOptional()
   // TODO: Add the label's max length
   label?: string;

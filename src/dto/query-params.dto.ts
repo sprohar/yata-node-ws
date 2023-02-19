@@ -4,18 +4,19 @@ import { IsEnum, IsNumberString, IsOptional } from 'class-validator';
 
 export class QueryParams {
   @IsNumberString()
-  @ApiProperty({ description: 'The page index' })
+  @ApiProperty({ description: 'The page index', required: false })
   @IsOptional()
   skip?: number;
-  
+
   @IsNumberString()
-  @ApiProperty({ description: 'The page size' })
+  @ApiProperty({ description: 'The page size', required: false })
   @IsOptional()
   take?: number;
 
   @ApiProperty({
     enum: Prisma.SortOrder,
     description: 'To sort by ascending or descending order',
+    required: false,
   })
   @IsOptional()
   @IsEnum(Prisma.SortOrder)

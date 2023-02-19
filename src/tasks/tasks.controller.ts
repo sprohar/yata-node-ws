@@ -8,35 +8,43 @@ import {
   NotFoundException,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   Put,
   Query,
 } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common/exceptions';
 import { ApiTags } from '@nestjs/swagger/dist/decorators';
 import { Prisma } from '@prisma/client';
 import { CreateTaskDto } from './dto/create-task.dto';
+import { TasksChronoQueryParamsDto } from './dto/tasks-chrono-query-params.dto';
 import { TasksQueryParams } from './dto/tasks-query-params.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
-import { TasksService } from './tasks.service';
-import { TasksChronoQueryParamsDto } from './dto/tasks-chrono-query-params.dto';
 import { Task } from './entities/task.entity';
+import { TasksService } from './tasks.service';
 
 @ApiTags('Tasks')
-@Controller('tasks')
+@Controller('projects/:projectId/tasks')
 export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
   @Post()
-  async create(@Body() createTaskDto: CreateTaskDto) {
-    try {
-      return await this.tasksService.create(createTaskDto);
-    } catch (error) {
-      throw new NotFoundException();
+  async create(
+    @Param('projectId', ParseIntPipe) projectId: number,
+    @Body() createTaskDto: CreateTaskDto,
+  ) {
+    const task = await this.tasksService.create(createTaskDto);
+    if (!task) {
+      throw new BadRequestException('Project does not exist.');
     }
+    return task;
   }
 
   @Get()
-  async findAll(@Query() query: TasksQueryParams) {
+  async findAll(
+    @Param('projectId', ParseIntPipe) projectId: number,
+    @Query() query: TasksQueryParams,
+  ) {
     const skip = query.skip ?? 0;
     const take = query.take ?? 30;
     const orderBy = {};
@@ -44,7 +52,7 @@ export class TasksController {
       query.dir ?? Prisma.SortOrder.asc;
 
     let where: Prisma.TaskWhereInput = {
-      projectId: +query.projectId,
+      projectId,
     };
 
     if (query.name) {
@@ -71,7 +79,10 @@ export class TasksController {
   }
 
   @Get('chrono')
-  async filterByDate(@Query() query: TasksChronoQueryParamsDto) {
+  async filterByDate(
+    @Param('projectId', ParseIntPipe) projectId: number,
+    @Query() query: TasksChronoQueryParamsDto,
+  ) {
     const skip = query.skip ?? 0;
     const take = query.take ?? 30;
     const orderBy = {};
@@ -79,7 +90,7 @@ export class TasksController {
       query.dir ?? Prisma.SortOrder.asc;
 
     let where: Prisma.TaskWhereInput = {
-      projectId: +query.projectId,
+      projectId,
     };
     if (query.start && query.end) {
       where = {
@@ -113,34 +124,41 @@ export class TasksController {
     });
   }
 
-  @Get(':id')
-  async findOne(@Param('id', ParseIntPipe) id: number) {
-    try {
-      return await this.tasksService.findOne(id);
-    } catch (error) {
+  @Get(':taskId')
+  async findOne(
+    @Param('projectId', ParseIntPipe) projectId: number,
+    @Param('taskId', ParseIntPipe) taskId: number,
+  ) {
+    const task = await this.tasksService.findOne(taskId);
+    if (!task) {
       throw new NotFoundException();
     }
+    return task;
   }
 
-  @Put(':id')
+  @Patch(':taskId')
   async update(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('projectId', ParseIntPipe) projectId: number,
+    @Param('taskId', ParseIntPipe) taskId: number,
     @Body() updateTaskDto: UpdateTaskDto,
   ) {
-    try {
-      return await this.tasksService.update(id, updateTaskDto);
-    } catch (error) {
+    const task = await this.tasksService.update(taskId, updateTaskDto);
+    if (!task) {
       throw new NotFoundException();
     }
+    return task;
   }
 
-  @Delete(':id')
+  @Delete(':taskId')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(@Param('id', ParseIntPipe) id: number) {
-    try {
-      return await this.tasksService.remove(id);
-    } catch (error) {
+  async remove(
+    @Param('projectId', ParseIntPipe) projectId: number,
+    @Param('taskId', ParseIntPipe) taskId: number,
+  ) {
+    const task = await this.tasksService.remove(taskId);
+    if (!task) {
       throw new NotFoundException();
     }
+    return HttpStatus.NO_CONTENT;
   }
 }

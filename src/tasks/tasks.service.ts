@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, Task } from '@prisma/client';
+import { PaginatedList } from 'src/interfaces/paginated-list.interface';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
@@ -8,7 +9,14 @@ import { UpdateTaskDto } from './dto/update-task.dto';
 export class TasksService {
   constructor(private prisma: PrismaService) {}
 
-  async create(createTaskDto: CreateTaskDto) {
+  async create(createTaskDto: CreateTaskDto): Promise<Task> {
+    const projectExists =
+      (await this.prisma.project.count({
+        where: { id: createTaskDto.projectId },
+      })) != 0;
+    if (!projectExists ) {
+      return null;
+    }
     return this.prisma.task.create({
       data: createTaskDto,
     });
@@ -20,29 +28,36 @@ export class TasksService {
     cursor?: Prisma.TaskWhereUniqueInput;
     where?: Prisma.TaskWhereInput;
     orderBy?: Prisma.TaskOrderByWithRelationInput;
-  }) {
+  }): Promise<PaginatedList<Task>> {
     const count = await this.prisma.task.count({
       where: params.where,
     });
 
-    const data = await this.prisma.task.findMany(params);
+    const data = await this.prisma.task.findMany({
+      where: params.where,
+      skip: +params.skip,
+      take: +params.take,
+    });
     return {
       pageIndex: params.skip,
       pageSize: params.take,
       count,
       data,
-    }
+    };
   }
 
-  async findOne(id: number) {
-    return this.prisma.task.findUniqueOrThrow({
+  async findOne(id: number): Promise<Task> {
+    return this.prisma.task.findFirst({
       where: {
         id,
       },
     });
   }
 
-  async update(id: number, updateTaskDto: UpdateTaskDto) {
+  async update(id: number, updateTaskDto: UpdateTaskDto): Promise<Task> {
+    if (!(await this.exists(id))) {
+      return null;
+    }
     return this.prisma.task.update({
       where: {
         id,
@@ -51,11 +66,19 @@ export class TasksService {
     });
   }
 
-  async remove(id: number) {
+  async remove(id: number): Promise<Task> {
+    if (!(await this.exists(id))) {
+      return null;
+    }
+
     return this.prisma.task.delete({
       where: {
         id,
       },
     });
+  }
+
+  async exists(id: number): Promise<boolean> {
+    return (await this.prisma.task.count({ where: { id } })) != 0;
   }
 }
