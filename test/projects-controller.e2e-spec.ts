@@ -84,11 +84,11 @@ describe('ProjectsController (e2e)', () => {
     });
   });
 
-  describe('PUT /projects/:id', () => {
+  describe('PATCH /projects/:id', () => {
     describe('Validation', () => {
       it('should throw BadRequestException when the "id" is not a number', async () => {
         const res = await request(app.getHttpServer())
-          .put(`${path}/abc`)
+          .patch(`${path}/abc`)
           .send({ name: 'foo' } as UpdateProjectDto);
         expect(res.status).toEqual(HttpStatus.BAD_REQUEST);
       });
@@ -96,7 +96,7 @@ describe('ProjectsController (e2e)', () => {
 
     it('should return 404 Not Found', async () => {
       const res = await request(app.getHttpServer())
-        .put(`${path}/0`)
+        .patch(`${path}/0`)
         .send({ name: 'foo' } as UpdateProjectDto);
       expect(res.status).toEqual(HttpStatus.NOT_FOUND);
     });
@@ -107,7 +107,7 @@ describe('ProjectsController (e2e)', () => {
       const prisma = app.get(PrismaService);
       const project = await prisma.project.create({ data: createProjectDto });
       const res = await request(app.getHttpServer())
-        .put(`${path}/${project.id}`)
+        .patch(`${path}/${project.id}`)
         .send(updateProjectDto);
 
       expect(res.status).toEqual(HttpStatus.OK);
