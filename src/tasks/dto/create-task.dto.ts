@@ -15,8 +15,8 @@ export class CreateTaskDto {
   @ApiProperty()
   @IsNotEmpty()
   @IsString()
-  @MaxLength(Task.Name.MAX_LENGTH)
-  name: string;
+  @MaxLength(Task.Content.MAX_LENGTH)
+  content: string;
 
   @ApiProperty()
   @IsNotEmpty()

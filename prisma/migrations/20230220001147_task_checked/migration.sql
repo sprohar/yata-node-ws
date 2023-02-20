@@ -1,55 +1,8 @@
-/*
-  Warnings:
+-- CreateEnum
+CREATE TYPE "view" AS ENUM ('LIST', 'KANBAN');
 
-  - You are about to drop the `activity_logs` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `projects` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `sections` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `tagged_tasks` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `tags` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `tasks` table. If the table is not empty, all the data it contains will be lost.
-
-*/
--- DropForeignKey
-ALTER TABLE "activity_logs" DROP CONSTRAINT "activity_logs_project_id_fkey";
-
--- DropForeignKey
-ALTER TABLE "activity_logs" DROP CONSTRAINT "activity_logs_task_id_fkey";
-
--- DropForeignKey
-ALTER TABLE "sections" DROP CONSTRAINT "sections_project_id_fkey";
-
--- DropForeignKey
-ALTER TABLE "tagged_tasks" DROP CONSTRAINT "tagged_tasks_tag_id_fkey";
-
--- DropForeignKey
-ALTER TABLE "tagged_tasks" DROP CONSTRAINT "tagged_tasks_task_id_fkey";
-
--- DropForeignKey
-ALTER TABLE "tasks" DROP CONSTRAINT "tasks_parent_id_fkey";
-
--- DropForeignKey
-ALTER TABLE "tasks" DROP CONSTRAINT "tasks_project_id_fkey";
-
--- DropForeignKey
-ALTER TABLE "tasks" DROP CONSTRAINT "tasks_section_id_fkey";
-
--- DropTable
-DROP TABLE "activity_logs";
-
--- DropTable
-DROP TABLE "projects";
-
--- DropTable
-DROP TABLE "sections";
-
--- DropTable
-DROP TABLE "tagged_tasks";
-
--- DropTable
-DROP TABLE "tags";
-
--- DropTable
-DROP TABLE "tasks";
+-- CreateEnum
+CREATE TYPE "priority" AS ENUM ('NONE', 'LOW', 'MEDIUM', 'HIGH');
 
 -- CreateTable
 CREATE TABLE "project" (
@@ -57,9 +10,9 @@ CREATE TABLE "project" (
     "project_name" VARCHAR(128) NOT NULL,
     "owner_id" TEXT,
     "is_important" BOOLEAN NOT NULL DEFAULT false,
-    "view" "view" NOT NULL DEFAULT 'LIST',
+    "project_view" "view" NOT NULL DEFAULT 'LIST',
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ,
 
     CONSTRAINT "project_pkey" PRIMARY KEY ("project_id")
 );
@@ -67,12 +20,14 @@ CREATE TABLE "project" (
 -- CreateTable
 CREATE TABLE "task" (
     "task_id" SERIAL NOT NULL,
-    "task_name" VARCHAR(256) NOT NULL,
+    "content" VARCHAR(1024) NOT NULL,
     "description" VARCHAR(8192),
     "due_date" TIMESTAMP(3),
     "priority" "priority" NOT NULL DEFAULT 'NONE',
+    "checked" BOOLEAN NOT NULL DEFAULT false,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "completed_at" TIMESTAMPTZ,
+    "updated_at" TIMESTAMPTZ,
     "project_id" INTEGER NOT NULL,
     "section_id" INTEGER,
     "parent_id" INTEGER,
@@ -117,7 +72,7 @@ CREATE TABLE "labeled_task" (
 );
 
 -- CreateIndex
-CREATE INDEX "task_task_name_idx" ON "task"("task_name");
+CREATE INDEX "task_content_idx" ON "task"("content");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "activity_task_id_key" ON "activity"("task_id");

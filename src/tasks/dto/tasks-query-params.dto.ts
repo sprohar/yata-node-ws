@@ -1,11 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Priority } from '@prisma/client';
 import {
-  IsEnum,
-  IsNotEmpty,
-  IsNumberString,
-  IsOptional,
-  MaxLength,
+  IsEnum, IsOptional,
+  MaxLength
 } from 'class-validator';
 import { QueryParams } from '../../dto/query-params.dto';
 import { Task } from '../entities/task.entity';
@@ -18,8 +15,8 @@ export class TasksQueryParams extends QueryParams {
 
   @ApiProperty({ required: false })
   @IsOptional()
-  @MaxLength(Task.Name.MAX_LENGTH)
-  name?: string;
+  @MaxLength(Task.Content.MAX_LENGTH)
+  content?: string;
 
   @ApiProperty({ enum: Priority, required: false })
   @IsOptional()

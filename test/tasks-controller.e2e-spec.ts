@@ -66,7 +66,7 @@ describe('TasksController', () => {
         const res = await request(app.getHttpServer())
           .post(`/projects/${projectId}/tasks`)
           .send({
-            name: ' '.repeat(Task.Name.MAX_LENGTH + 1),
+            name: ' '.repeat(Task.Content.MAX_LENGTH + 1),
             projectId,
           });
         expect(res.status).toEqual(HttpStatus.BAD_REQUEST);
@@ -86,7 +86,7 @@ describe('TasksController', () => {
 
     it('should throw BadRequestException when the project does not exist', async () => {
       const createTaskDto: CreateTaskDto = {
-        name: 'Task',
+        content: 'Task',
         projectId: 0,
       };
 
@@ -98,7 +98,7 @@ describe('TasksController', () => {
 
     it('should create a new Task', async () => {
       const createTaskDto: CreateTaskDto = {
-        name: 'Task',
+        content: 'Task',
         projectId,
       };
 

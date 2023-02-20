@@ -14,7 +14,7 @@ model Project {
     isImportant Boolean    @default(false) @map("is_important")
     view        View       @default(LIST) @map("project_view")
     createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamptz
-    updatedAt   DateTime   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+    updatedAt   DateTime?  @updatedAt @map("updated_at") @db.Timestamptz
     // relations
     tasks       Task[]
     sections    Section[]
@@ -25,12 +25,14 @@ model Project {
 
 model Task {
     id           Int            @id @default(autoincrement()) @map("task_id")
-    name         String         @map("task_name") @db.VarChar(256)
+    content      String         @db.VarChar(1024)
     description  String?        @db.VarChar(8192)
     dueDate      DateTime?      @map("due_date")
     priority     Priority       @default(NONE)
+    checked      Boolean        @default(false)
     createdAt    DateTime       @default(now()) @map("created_at") @db.Timestamptz
-    updatedAt    DateTime       @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+    completedAt  DateTime?      @map("completed_at") @db.Timestamptz
+    updatedAt    DateTime?      @updatedAt @map("updated_at") @db.Timestamptz
     // relations
     Project      Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
     projectId    Int            @map("project_id")
@@ -40,10 +42,10 @@ model Task {
     activity     Activity?
     // subtasks
     subtasks     Task[]         @relation("subtasks")
-    task         Task?          @relation("subtasks", fields: [taskId], references: [id])
-    taskId       Int?           @map("parent_id")
+    task         Task?          @relation("subtasks", fields: [parentId], references: [id])
+    parentId     Int?           @map("parent_id")
 
-    @@index([name])
+    @@index([content])
     @@map("task")
 }
 
@@ -82,10 +84,10 @@ model Label {
 }
 
 model LabeledTasks {
-    labelId  Int   @map("label_id")
-    label  Label @relation(fields: [labelId], references: [id], onDelete: Cascade)
-    taskId Int   @map("task_id")
-    task   Task  @relation(fields: [taskId], references: [id], onDelete: Cascade)
+    labelId Int   @map("label_id")
+    label   Label @relation(fields: [labelId], references: [id], onDelete: Cascade)
+    taskId  Int   @map("task_id")
+    task    Task  @relation(fields: [taskId], references: [id], onDelete: Cascade)
 
     @@id([taskId, labelId])
     @@map("labeled_task")

@@ -1,8 +1,8 @@
 export class Task {}
 
 export namespace Task {
-  export enum Name {
-    MAX_LENGTH = 256,
+  export enum Content {
+    MAX_LENGTH = 1024,
   }
 
   export enum Description {
@@ -10,7 +10,7 @@ export namespace Task {
   }
 
   export enum OrderBy {
-    NAME = 'name',
+    CONTENT = 'content',
     PRIORITY = 'priority',
     DUE_DATE = 'dueDate',
     INCEPTION = 'createdAt',

@@ -10,7 +10,6 @@ import {
   ParseIntPipe,
   Patch,
   Post,
-  Put,
   Query,
 } from '@nestjs/common';
 import { BadRequestException } from '@nestjs/common/exceptions';
@@ -55,11 +54,11 @@ export class TasksController {
       projectId,
     };
 
-    if (query.name) {
+    if (query.content) {
       where = {
         ...where,
-        name: {
-          contains: query.name,
+        content: {
+          contains: query.content,
         },
       };
     }

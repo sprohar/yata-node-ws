@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Section, Task } from '@prisma/client';
 const prisma = new PrismaClient();
 
 const main = async () => {
@@ -7,21 +7,21 @@ const main = async () => {
       name: 'Yata API',
       sections: {
         create: [
-          { name: 'To-Do'},
-          { name: 'In Progress'},
-          { name: 'Testing'},
-          { name: 'Complete'},
-        ]
-      }
+          { name: 'To-Do' },
+          { name: 'In Progress' },
+          { name: 'Testing' },
+          { name: 'Complete' },
+        ] as Section[],
+      },
     },
   });
 
   await prisma.task.createMany({
     data: [
-      { name: 'Create controllers', projectId: projects.id },
-      { name: 'Create services', projectId: projects.id },
-      { name: 'e2e tests', projectId: projects.id },
-    ],
+      { content: 'Create controllers', projectId: projects.id },
+      { content: 'Create services', projectId: projects.id },
+      { content: 'e2e tests', projectId: projects.id },
+    ] as Task[],
   });
 };
 
