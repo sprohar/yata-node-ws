@@ -1,5 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Priority } from '@prisma/client';
 import {
   IsBoolean,
   IsEnum,
@@ -60,8 +59,8 @@ export class CreateTaskDto {
   @IsOptional()
   completedOn?: string;
 
-  @ApiProperty({ enum: Priority })
+  @ApiProperty({ enum: Task.Priority })
   @IsOptional()
-  @IsEnum(Priority)
-  priority?: Priority;
+  @IsEnum(Task.Priority)
+  priority?: Task.Priority;
 }
