@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Priority } from '@prisma/client';
 import {
+  IsBoolean,
   IsEnum,
   IsISO8601,
   IsNotEmpty,
@@ -17,6 +18,12 @@ export class CreateTaskDto {
   @IsString()
   @MaxLength(Task.Content.MAX_LENGTH)
   content: string;
+  
+  
+  @ApiProperty()
+  @IsOptional()
+  @IsBoolean()
+  checked?: boolean;
 
   @ApiProperty()
   @IsNotEmpty()
