@@ -1,5 +1,6 @@
 import { HttpStatus, INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { UpdateTaskDto } from 'src/tasks/dto/update-task.dto';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/prisma/prisma.service';
@@ -52,41 +53,44 @@ describe('TasksController', () => {
       });
 
       it('should return 400 when given an invalid date', async () => {
+        const createTaskDto: CreateTaskDto = {
+          title: 'Task',
+          projectId,
+          dueDate: '10-10-2010',
+        };
         const res = await request(app.getHttpServer())
           .post(`/projects/${projectId}/tasks`)
-          .send({
-            name: 'Task',
-            projectId,
-            dueDate: '10-10-2010',
-          });
+          .send(createTaskDto);
         expect(res.status).toEqual(HttpStatus.BAD_REQUEST);
       });
 
-      it('should return 400 when given the name is too long', async () => {
+      it('should return 400 when given the Title is too long', async () => {
+        const createTaskDto: CreateTaskDto = {
+          title: ' '.repeat(Task.Title.MAX_LENGTH + 1),
+          projectId,
+        };
         const res = await request(app.getHttpServer())
           .post(`/projects/${projectId}/tasks`)
-          .send({
-            name: ' '.repeat(Task.Content.MAX_LENGTH + 1),
-            projectId,
-          });
+          .send(createTaskDto);
         expect(res.status).toEqual(HttpStatus.BAD_REQUEST);
       });
 
-      it('should return 400 when given the description is too long', async () => {
+      it('should return 400 when given the Content is too long', async () => {
+        const createTaskDto: CreateTaskDto = {
+          title: 'Task',
+          projectId,
+          content: ' '.repeat(Task.Content.MAX_LENGTH + 1),
+        };
         const res = await request(app.getHttpServer())
           .post(`/projects/${projectId}/tasks`)
-          .send({
-            name: 'Task',
-            projectId,
-            description: ' '.repeat(Task.Description.MAX_LENGTH + 1),
-          });
+          .send(createTaskDto);
         expect(res.status).toEqual(HttpStatus.BAD_REQUEST);
       });
     });
 
     it('should throw BadRequestException when the project does not exist', async () => {
       const createTaskDto: CreateTaskDto = {
-        content: 'Task',
+        title: 'Task',
         projectId: 0,
       };
 
@@ -98,7 +102,7 @@ describe('TasksController', () => {
 
     it('should create a new Task', async () => {
       const createTaskDto: CreateTaskDto = {
-        content: 'Task',
+        title: 'Task',
         projectId,
       };
 
@@ -113,12 +117,13 @@ describe('TasksController', () => {
     let taskId: number;
 
     beforeEach(async () => {
+      const createTaskDto: CreateTaskDto = {
+        title: 'Mock Task',
+        projectId,
+      };
       const res = await request(app.getHttpServer())
         .post(`/projects/${projectId}/tasks`)
-        .send({
-          name: 'Mock Task',
-          projectId,
-        });
+        .send(createTaskDto);
       taskId = Number.parseInt(res.body.id, 10);
     });
 
@@ -142,12 +147,13 @@ describe('TasksController', () => {
     let taskId: number;
 
     beforeEach(async () => {
+      const createTaskDto: CreateTaskDto = {
+        title: 'Mock Task',
+        projectId,
+      };
       const res = await request(app.getHttpServer())
         .post(`/projects/${projectId}/tasks`)
-        .send({
-          name: 'Mock Task',
-          projectId,
-        });
+        .send(createTaskDto);
       taskId = Number.parseInt(res.body.id, 10);
     });
 
@@ -170,12 +176,13 @@ describe('TasksController', () => {
     let taskId: number;
 
     beforeEach(async () => {
+      const createTaskDto: CreateTaskDto = {
+        title: 'Mock Task',
+        projectId,
+      };
       const res = await request(app.getHttpServer())
         .post(`/projects/${projectId}/tasks`)
-        .send({
-          name: 'Mock Task',
-          projectId,
-        });
+        .send(createTaskDto);
       taskId = Number.parseInt(res.body.id, 10);
     });
 
@@ -188,9 +195,10 @@ describe('TasksController', () => {
     });
 
     it('should update a Task', async () => {
+      const updateTaskDto: UpdateTaskDto = { title: 'Updated via PATCH' };
       const res = await request(app.getHttpServer())
         .patch(`/projects/${projectId}/tasks/${taskId}`)
-        .send({ name: 'Updated via PATCH' });
+        .send(updateTaskDto);
 
       expect(res.status).toEqual(HttpStatus.OK);
       expect(res.body).toBeDefined();

@@ -16,14 +16,23 @@ export class CreateTaskDto {
   @ApiProperty()
   @IsNotEmpty()
   @IsString()
-  @MaxLength(Task.Content.MAX_LENGTH)
-  content: string;
-  
-  
+  @MaxLength(Task.Title.MAX_LENGTH)
+  title: string;
+
   @ApiProperty()
   @IsOptional()
   @IsBoolean()
-  checked?: boolean;
+  completed?: boolean;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsBoolean()
+  deleted?: boolean;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsBoolean()
+  isAllDay?: boolean;
 
   @ApiProperty()
   @IsNotEmpty()
@@ -33,13 +42,23 @@ export class CreateTaskDto {
   @ApiProperty()
   @IsOptional()
   @IsString()
-  @MaxLength(Task.Description.MAX_LENGTH)
-  description?: string;
+  @MaxLength(Task.Content.MAX_LENGTH)
+  content?: string;
 
   @ApiProperty()
   @IsISO8601()
   @IsOptional()
   dueDate?: string;
+
+  @ApiProperty()
+  @IsISO8601()
+  @IsOptional()
+  startedOn?: string;
+
+  @ApiProperty()
+  @IsISO8601()
+  @IsOptional()
+  completedOn?: string;
 
   @ApiProperty({ enum: Priority })
   @IsOptional()

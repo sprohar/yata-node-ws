@@ -18,9 +18,9 @@ const main = async () => {
 
   await prisma.task.createMany({
     data: [
-      { content: 'Create controllers', projectId: projects.id },
-      { content: 'Create services', projectId: projects.id },
-      { content: 'e2e tests', projectId: projects.id },
+      { title: 'Create controllers', projectId: projects.id },
+      { title: 'Create services', projectId: projects.id },
+      { title: 'e2e tests', projectId: projects.id },
     ] as Task[],
   });
 };

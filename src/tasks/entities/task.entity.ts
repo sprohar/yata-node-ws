@@ -1,11 +1,18 @@
 export class Task {}
 
 export namespace Task {
-  export enum Content {
+  export enum Priority {
+    NONE,
+    HIGH,
+    MEDIUM,
+    LOW,
+  }
+  
+  export enum Title {
     MAX_LENGTH = 1024,
   }
 
-  export enum Description {
+  export enum Content {
     MAX_LENGTH = 8192,
   }
 

@@ -25,13 +25,16 @@ model Project {
 
 model Task {
     id           Int            @id @default(autoincrement()) @map("task_id")
-    content      String         @db.VarChar(1024)
-    description  String?        @db.VarChar(8192)
+    title        String         @db.VarChar(1024)
+    content      String?        @db.VarChar(8192)
+    priority     Int            @default(0)
+    completed    Boolean        @default(false)
+    deleted      Boolean        @default(false)
+    isAllDay     Boolean        @default(true) @map("is_all_day")
     dueDate      DateTime?      @map("due_date")
-    priority     Priority       @default(NONE)
-    checked      Boolean        @default(false)
+    startedOn    DateTime?      @default(now()) @map("started_on") @db.Timestamptz
+    completedOn  DateTime?      @map("completed_on") @db.Timestamptz
     createdAt    DateTime       @default(now()) @map("created_at") @db.Timestamptz
-    completedAt  DateTime?      @map("completed_at") @db.Timestamptz
     updatedAt    DateTime?      @updatedAt @map("updated_at") @db.Timestamptz
     // relations
     Project      Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
@@ -98,13 +101,4 @@ enum View {
     KANBAN
 
     @@map("view")
-}
-
-enum Priority {
-    NONE
-    LOW
-    MEDIUM
-    HIGH
-
-    @@map("priority")
 }

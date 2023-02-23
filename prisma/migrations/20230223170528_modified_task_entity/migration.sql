@@ -1,9 +1,6 @@
 -- CreateEnum
 CREATE TYPE "view" AS ENUM ('LIST', 'KANBAN');
 
--- CreateEnum
-CREATE TYPE "priority" AS ENUM ('NONE', 'LOW', 'MEDIUM', 'HIGH');
-
 -- CreateTable
 CREATE TABLE "project" (
     "project_id" SERIAL NOT NULL,
@@ -20,13 +17,16 @@ CREATE TABLE "project" (
 -- CreateTable
 CREATE TABLE "task" (
     "task_id" SERIAL NOT NULL,
-    "content" VARCHAR(1024) NOT NULL,
-    "description" VARCHAR(8192),
+    "title" VARCHAR(1024) NOT NULL,
+    "content" VARCHAR(8192),
+    "priority" INTEGER NOT NULL DEFAULT 0,
+    "completed" BOOLEAN NOT NULL DEFAULT false,
+    "deleted" BOOLEAN NOT NULL DEFAULT false,
+    "is_all_day" BOOLEAN NOT NULL DEFAULT true,
     "due_date" TIMESTAMP(3),
-    "priority" "priority" NOT NULL DEFAULT 'NONE',
-    "checked" BOOLEAN NOT NULL DEFAULT false,
-    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "started_at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     "completed_at" TIMESTAMPTZ,
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ,
     "project_id" INTEGER NOT NULL,
     "section_id" INTEGER,

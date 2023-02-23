@@ -54,11 +54,11 @@ export class TasksController {
       projectId,
     };
 
-    if (query.content) {
+    if (query.title) {
       where = {
         ...where,
         content: {
-          contains: query.content,
+          contains: query.title,
         },
       };
     }
@@ -141,6 +141,10 @@ export class TasksController {
     @Param('taskId', ParseIntPipe) taskId: number,
     @Body() updateTaskDto: UpdateTaskDto,
   ) {
+    if (updateTaskDto.completed) {
+      updateTaskDto.completedOn = new Date().toISOString();
+    }
+
     const task = await this.tasksService.update(taskId, updateTaskDto);
     if (!task) {
       throw new NotFoundException();
