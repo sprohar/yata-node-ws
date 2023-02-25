@@ -33,7 +33,24 @@ const main = async () => {
         projectId: projects.id,
         sectionId: 1,
       },
-    ] as Task[],
+    ] ,
+  });
+
+  await prisma.subtask.createMany({
+    data: [
+      {
+        title: 'Project Activities',
+        taskId: 1,
+      },
+      {
+        title: 'Task Activities',
+        taskId: 1,
+      },
+      {
+        title: 'Tags',
+        taskId: 1,
+      },
+    ]
   });
 };
 
