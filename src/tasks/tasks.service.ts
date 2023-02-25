@@ -14,7 +14,7 @@ export class TasksService {
       (await this.prisma.project.count({
         where: { id: createTaskDto.projectId },
       })) != 0;
-    if (!projectExists ) {
+    if (!projectExists) {
       return null;
     }
     return this.prisma.task.create({
@@ -37,7 +37,9 @@ export class TasksService {
       where: params.where,
       skip: +params.skip,
       take: +params.take,
+      orderBy: params.orderBy,
     });
+
     return {
       pageIndex: params.skip,
       pageSize: params.take,
