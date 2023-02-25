@@ -33,18 +33,33 @@ export class TasksService {
       where: params.where,
     });
 
-    const data = await this.prisma.task.findMany({
+    const tasks = await this.prisma.task.findMany({
       where: params.where,
+      include: {
+        subtasks: true,
+      },
       skip: +params.skip,
       take: +params.take,
       orderBy: params.orderBy,
+    });
+
+    // Remove undefined and null fields
+    tasks.forEach((task) => {
+      Object.keys(task).forEach((key) => task[key] == null && delete task[key]);
+      if (task.subtasks.length) {
+        task.subtasks.forEach((subtask) => {
+          Object.keys(subtask).forEach(
+            (key) => subtask[key] == null && delete subtask[key],
+          );
+        });
+      }
     });
 
     return {
       pageIndex: params.skip,
       pageSize: params.take,
       count,
-      data,
+      data: tasks,
     };
   }
 
@@ -52,6 +67,9 @@ export class TasksService {
     return this.prisma.task.findFirst({
       where: {
         id,
+      },
+      include: {
+        subtasks: true,
       },
     });
   }
