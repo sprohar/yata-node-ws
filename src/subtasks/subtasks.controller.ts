@@ -1,15 +1,35 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { SubtasksService } from './subtasks.service';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common/exceptions';
+import { ParseIntPipe } from '@nestjs/common/pipes';
+import { ApiTags } from '@nestjs/swagger';
 import { CreateSubtaskDto } from './dto/create-subtask.dto';
 import { UpdateSubtaskDto } from './dto/update-subtask.dto';
+import { SubtasksService } from './subtasks.service';
 
-@Controller('subtasks')
+@ApiTags('Subtasks')
+@Controller('/tasks/:taskId/subtasks')
 export class SubtasksController {
   constructor(private readonly subtasksService: SubtasksService) {}
 
   @Post()
-  create(@Body() createSubtaskDto: CreateSubtaskDto) {
-    return this.subtasksService.create(createSubtaskDto);
+  async create(
+    @Param('taskId', ParseIntPipe) taskId,
+    @Body() createSubtaskDto: CreateSubtaskDto,
+  ) {
+    const subtask = await this.subtasksService.create(createSubtaskDto);
+    if (!subtask) {
+      throw new BadRequestException();
+    }
+
+    return subtask;
   }
 
   @Get()
