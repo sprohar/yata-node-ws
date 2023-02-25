@@ -48,7 +48,7 @@ export class TasksController {
     const take = query.take ?? 30;
     const orderBy = {};
     orderBy[`${query.orderBy ?? Task.OrderBy.DEFAULT}`] =
-      query.dir ?? Prisma.SortOrder.asc;
+      query.dir ?? Prisma.SortOrder.desc;
 
     let where: Prisma.TaskWhereInput = {
       projectId,
