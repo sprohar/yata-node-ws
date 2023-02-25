@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { View } from '@prisma/client';
+import { ProjectView } from '@prisma/client';
 import {
   IsString,
   IsBoolean,
@@ -22,10 +22,10 @@ export class CreateProjectDto {
   @IsBoolean()
   isImportant?: boolean;
 
-  @ApiProperty({ enum: View })
-  @IsEnum(View)
+  @ApiProperty({ enum: ProjectView })
+  @IsEnum(ProjectView)
   @IsOptional()
-  view?: View;
+  view?: ProjectView;
 
   @ApiProperty()
   @IsOptional()
