@@ -51,18 +51,15 @@ model Task {
 model Subtask {
     id          Int       @id @default(autoincrement())
     title       String    @db.VarChar(1024)
-    content     String?   @db.VarChar(8192)
     priority    Int       @default(0)
     completed   Boolean   @default(false)
     deleted     Boolean   @default(false)
-    allDay      Boolean   @default(true) @map("all_day")
-    dueDate     DateTime? @map("due_date") @db.Timestamptz
     completedOn DateTime? @map("completed_on") @db.Timestamptz
     createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz
     updatedAt   DateTime? @updatedAt @map("updated_at") @db.Timestamptz
     // relations
     task        Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
-    taskId      Int
+    taskId      Int       @map("task_id")
 
     @@map("subtask")
 }

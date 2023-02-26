@@ -36,12 +36,7 @@ export class TasksService {
     const tasks = await this.prisma.task.findMany({
       where: params.where,
       include: {
-        subtasks: {
-          select: {
-            id: true,
-            title: true,
-          },
-        },
+        subtasks: true,
       },
       skip: +params.skip,
       take: +params.take,
