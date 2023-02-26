@@ -38,16 +38,13 @@ export class TasksService {
       include: {
         subtasks: true,
       },
-      skip: +params.skip,
-      take: +params.take,
+      skip: params.skip,
+      take: params.take,
       orderBy: params.orderBy,
     });
 
     // Remove undefined and null fields
     tasks.forEach((task) => {
-      delete task.updatedAt;
-      delete task.projectId;
-      delete task.sectionId;
       Object.keys(task).forEach((key) => task[key] == null && delete task[key]);
       if (task.subtasks.length) {
         task.subtasks.forEach((subtask) => {

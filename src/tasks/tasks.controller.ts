@@ -15,6 +15,7 @@ import {
 import { BadRequestException } from '@nestjs/common/exceptions';
 import { ApiTags } from '@nestjs/swagger/dist/decorators';
 import { Prisma } from '@prisma/client';
+import { QueryParams } from 'src/dto/query-params.dto';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { TasksChronoQueryParamsDto } from './dto/tasks-chrono-query-params.dto';
 import { TasksQueryParams } from './dto/tasks-query-params.dto';
@@ -82,8 +83,8 @@ export class TasksController {
     @Param('projectId', ParseIntPipe) projectId: number,
     @Query() query: TasksChronoQueryParamsDto,
   ) {
-    const skip = query.skip ?? 0;
-    const take = query.take ?? 30;
+    const skip = query.skip ?? QueryParams.SKIP_DEFAULT;
+    const take = query.take ?? QueryParams.TAKE_DEFAULT;
     const orderBy: { [key: string]: string } = {};
     orderBy[`${query.orderBy ?? Task.OrderBy.DEFAULT}`] =
       query.dir ?? Prisma.SortOrder.asc;
@@ -121,6 +122,35 @@ export class TasksController {
       take,
       where,
       orderBy,
+    });
+  }
+
+  @Get('chrono/today')
+  async getTodaysTasks(@Query() query: QueryParams) {
+    const skip = query.skip ?? QueryParams.SKIP_DEFAULT;
+    const take = query.take ?? QueryParams.TAKE_DEFAULT;
+    const upperBound = new Date();
+    upperBound.setHours(23);
+    upperBound.setMinutes(59);
+    upperBound.setSeconds(0);
+
+    const lowerBound = new Date();
+    lowerBound.setHours(0);
+    lowerBound.setMinutes(0);
+    lowerBound.setSeconds(0);
+
+    return await this.tasksService.findAll({
+      skip,
+      take,
+      orderBy: {
+        dueDate: Prisma.SortOrder.asc,
+      },
+      where: {
+        dueDate: {
+          lte: upperBound,
+          gte: lowerBound,
+        },
+      },
     });
   }
 
