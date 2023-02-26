@@ -3,13 +3,22 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
-import { BadRequestException } from '@nestjs/common/exceptions';
+import {
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common/exceptions';
 import { ParseIntPipe } from '@nestjs/common/pipes';
 import { ApiTags } from '@nestjs/swagger';
+import { Prisma } from '@prisma/client';
+import { TasksQueryParams } from '../tasks/dto/tasks-query-params.dto';
+import { Task } from '../tasks/entities/task.entity';
 import { CreateSubtaskDto } from './dto/create-subtask.dto';
 import { UpdateSubtaskDto } from './dto/update-subtask.dto';
 import { SubtasksService } from './subtasks.service';
@@ -20,10 +29,7 @@ export class SubtasksController {
   constructor(private readonly subtasksService: SubtasksService) {}
 
   @Post()
-  async create(
-    @Param('taskId', ParseIntPipe) taskId,
-    @Body() createSubtaskDto: CreateSubtaskDto,
-  ) {
+  async create(@Body() createSubtaskDto: CreateSubtaskDto) {
     const subtask = await this.subtasksService.create(createSubtaskDto);
     if (!subtask) {
       throw new BadRequestException();
@@ -33,22 +39,57 @@ export class SubtasksController {
   }
 
   @Get()
-  findAll() {
-    return this.subtasksService.findAll();
+  async findAll(
+    @Param('taskId', ParseIntPipe) taskId,
+    @Query() query: TasksQueryParams,
+  ) {
+    const skip = query.skip ?? 0;
+    const take = query.take ?? 30;
+    const orderBy = {};
+    orderBy[`${query.orderBy ?? Task.OrderBy.DEFAULT}`] =
+      query.dir ?? Prisma.SortOrder.desc;
+
+    return await this.subtasksService.findAll({
+      skip,
+      take,
+      where: {
+        taskId,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.subtasksService.findOne(+id);
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    const subtask = await this.subtasksService.findOne(id);
+    if (!subtask) {
+      throw new NotFoundException();
+    }
+    return subtask;
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateSubtaskDto: UpdateSubtaskDto) {
-    return this.subtasksService.update(+id, updateSubtaskDto);
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateSubtaskDto: UpdateSubtaskDto,
+  ) {
+    const subtask = await this.subtasksService.update(id, updateSubtaskDto);
+    if (!subtask) {
+      throw new NotFoundException();
+    }
+    return subtask;
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.subtasksService.remove(+id);
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    const subtask = await this.subtasksService.remove(id);
+    if (!subtask) {
+      throw new NotFoundException();
+    }
+
+    return HttpStatus.NO_CONTENT;
   }
 }
