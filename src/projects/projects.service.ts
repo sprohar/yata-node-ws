@@ -40,7 +40,12 @@ export class ProjectsService {
 
     params.skip = +params.skip;
     params.take = +params.take;
-    const data = await this.prisma.project.findMany(params);
+    const data = await this.prisma.project.findMany({
+      ...params,
+      include: {
+        sections: true,
+      },
+    });
 
     return {
       pageIndex: params.skip,
@@ -69,6 +74,9 @@ export class ProjectsService {
     return this.prisma.project.update({
       where: {
         id,
+      },
+      include: {
+        sections: true,
       },
       data: updateProjectDto,
     });
