@@ -6,6 +6,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard } from '@nestjs/throttler/dist/throttler.guard';
 import { SubtasksModule } from './subtasks/subtasks.module';
+import { SectionsModule } from './sections/sections.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { SubtasksModule } from './subtasks/subtasks.module';
       limit: 10,
     }),
     SubtasksModule,
+    SectionsModule,
   ],
   controllers: [],
   providers: [
