@@ -42,9 +42,6 @@ export class ProjectsService {
     params.take = +params.take;
     const data = await this.prisma.project.findMany({
       ...params,
-      include: {
-        sections: true,
-      },
     });
 
     return {
@@ -59,6 +56,10 @@ export class ProjectsService {
     return this.prisma.project.findFirst({
       where: {
         id,
+      },
+      include: {
+        sections: true,
+        tasks: true,
       },
     });
   }
