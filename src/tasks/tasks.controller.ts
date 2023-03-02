@@ -18,64 +18,22 @@ import { Prisma } from '@prisma/client';
 import { QueryParams } from '../dto/query-params.dto';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { TasksChronoQueryParamsDto } from './dto/tasks-chrono-query-params.dto';
-import { TasksQueryParams } from './dto/tasks-query-params.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { Task } from './entities/task.entity';
 import { TasksService } from './tasks.service';
 
 @ApiTags('Tasks')
-@Controller('projects/:projectId/tasks')
+@Controller('tasks')
 export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
   @Post()
-  async create(
-    @Param('projectId', ParseIntPipe) projectId: number,
-    @Body() createTaskDto: CreateTaskDto,
-  ) {
+  async create(@Body() createTaskDto: CreateTaskDto) {
     const task = await this.tasksService.create(createTaskDto);
     if (!task) {
       throw new BadRequestException('Project does not exist.');
     }
     return task;
-  }
-
-  @Get()
-  async findAll(
-    @Param('projectId', ParseIntPipe) projectId: number,
-    @Query() query: TasksQueryParams,
-  ) {
-    const skip = query.skip ?? 0;
-    const take = query.take ?? 30;
-    const orderBy = {};
-    orderBy[`${query.orderBy ?? Task.OrderBy.DEFAULT}`] =
-      query.dir ?? Prisma.SortOrder.desc;
-
-    let where: Prisma.TaskWhereInput = {
-      projectId,
-    };
-
-    if (query.title) {
-      where = {
-        ...where,
-        content: {
-          contains: query.title,
-        },
-      };
-    }
-    if (query.priority) {
-      where = {
-        ...where,
-        priority: query.priority,
-      };
-    }
-
-    return await this.tasksService.findAll({
-      skip,
-      take,
-      where,
-      orderBy,
-    });
   }
 
   @Get('chrono')
@@ -154,45 +112,39 @@ export class TasksController {
     });
   }
 
-  @Get(':taskId')
-  async findOne(
-    @Param('projectId', ParseIntPipe) projectId: number,
-    @Param('taskId', ParseIntPipe) taskId: number,
-  ) {
-    const task = await this.tasksService.findOne(taskId);
+  @Get(':id')
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    const task = await this.tasksService.findOne(id);
     if (!task) {
       throw new NotFoundException();
     }
     return task;
   }
 
-  @Patch(':taskId')
+  @Patch(':id')
   async update(
-    @Param('projectId', ParseIntPipe) projectId: number,
-    @Param('taskId', ParseIntPipe) taskId: number,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateTaskDto: UpdateTaskDto,
   ) {
     if (updateTaskDto.completed) {
       updateTaskDto.completedOn = new Date().toISOString();
     }
 
-    const task = await this.tasksService.update(taskId, updateTaskDto);
+    const task = await this.tasksService.update(id, updateTaskDto);
     if (!task) {
       throw new NotFoundException();
     }
     return task;
   }
 
-  @Delete(':taskId')
+  @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(
-    @Param('projectId', ParseIntPipe) projectId: number,
-    @Param('taskId', ParseIntPipe) taskId: number,
-  ) {
-    const task = await this.tasksService.remove(taskId);
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    const task = await this.tasksService.remove(id);
     if (!task) {
       throw new NotFoundException();
     }
+
     return HttpStatus.NO_CONTENT;
   }
 }

@@ -8,7 +8,6 @@ import { CreateTaskDto } from '../src/tasks/dto/create-task.dto';
 import { Task } from '../src/tasks/entities/task.entity';
 
 describe('TasksController', () => {
-  const path = '/projects';
   let app: INestApplication;
   let projectId: number;
 
@@ -31,7 +30,8 @@ describe('TasksController', () => {
     const res = await request(app.getHttpServer())
       .post('/projects')
       .send({ name: 'Test Project' });
-    projectId = Number.parseInt(res.body.id, 10);
+
+    projectId = parseInt(res.body.id);
   });
 
   afterEach(async () => {
@@ -39,11 +39,11 @@ describe('TasksController', () => {
     await prisma.project.deleteMany();
   });
 
-  describe('POST /projects/:projectId/tasks', () => {
+  describe('POST /tasks', () => {
     describe('Validation', () => {
       it('should return 400 when given an invalid priority value', async () => {
         const res = await request(app.getHttpServer())
-          .post(`/projects/${projectId}/tasks`)
+          .post(`/tasks`)
           .send({
             name: 'Task',
             projectId: projectId,
@@ -59,7 +59,7 @@ describe('TasksController', () => {
           dueDate: '10-10-2010',
         };
         const res = await request(app.getHttpServer())
-          .post(`/projects/${projectId}/tasks`)
+          .post(`/tasks`)
           .send(createTaskDto);
         expect(res.status).toEqual(HttpStatus.BAD_REQUEST);
       });
@@ -70,7 +70,7 @@ describe('TasksController', () => {
           projectId,
         };
         const res = await request(app.getHttpServer())
-          .post(`/projects/${projectId}/tasks`)
+          .post(`/tasks`)
           .send(createTaskDto);
         expect(res.status).toEqual(HttpStatus.BAD_REQUEST);
       });
@@ -82,7 +82,7 @@ describe('TasksController', () => {
           content: ' '.repeat(Task.Content.MAX_LENGTH + 1),
         };
         const res = await request(app.getHttpServer())
-          .post(`/projects/${projectId}/tasks`)
+          .post(`/tasks`)
           .send(createTaskDto);
         expect(res.status).toEqual(HttpStatus.BAD_REQUEST);
       });
@@ -95,7 +95,7 @@ describe('TasksController', () => {
       };
 
       const res = await request(app.getHttpServer())
-        .post('/projects/0/tasks')
+        .post('/tasks')
         .send(createTaskDto);
       expect(res.status).toEqual(HttpStatus.BAD_REQUEST);
     });
@@ -107,13 +107,13 @@ describe('TasksController', () => {
       };
 
       const res = await request(app.getHttpServer())
-        .post(`/projects/${projectId}/tasks`)
+        .post(`/tasks`)
         .send(createTaskDto);
       expect(res.status).toEqual(HttpStatus.CREATED);
     });
   });
 
-  describe('GET /projects/:projectId/tasks/:taskId', () => {
+  describe('GET /tasks/:taskId', () => {
     let taskId: number;
 
     beforeEach(async () => {
@@ -121,29 +121,31 @@ describe('TasksController', () => {
         title: 'Mock Task',
         projectId,
       };
+
       const res = await request(app.getHttpServer())
-        .post(`/projects/${projectId}/tasks`)
+        .post(`/tasks`)
         .send(createTaskDto);
-      taskId = Number.parseInt(res.body.id, 10);
+
+      taskId = parseInt(res.body.id);
     });
 
     it('should return 404 when a task does not exist', async () => {
       const res = await request(app.getHttpServer()).get(
-        `/projects/${projectId}/tasks/0`,
+        `/tasks/0`,
       );
       expect(res.status).toEqual(HttpStatus.NOT_FOUND);
     });
 
     it('should return a Task', async () => {
       const res = await request(app.getHttpServer()).get(
-        `/projects/${projectId}/tasks/${taskId}`,
+        `/tasks/${taskId}`,
       );
       expect(res.status).toEqual(HttpStatus.OK);
       expect(res.body).toBeDefined();
     });
   });
 
-  describe('DELETE /projects/:projectId/tasks/:id', () => {
+  describe('DELETE /tasks/:id', () => {
     let taskId: number;
 
     beforeEach(async () => {
@@ -152,27 +154,27 @@ describe('TasksController', () => {
         projectId,
       };
       const res = await request(app.getHttpServer())
-        .post(`/projects/${projectId}/tasks`)
+        .post(`/tasks`)
         .send(createTaskDto);
       taskId = Number.parseInt(res.body.id, 10);
     });
 
     it('should return 404 when a task does not exist', async () => {
       const res = await request(app.getHttpServer()).delete(
-        `/projects/${projectId}/tasks/0`,
+        `/tasks/0`,
       );
       expect(res.status).toEqual(HttpStatus.NOT_FOUND);
     });
 
     it('should delete a Task', async () => {
       const res = await request(app.getHttpServer()).delete(
-        `/projects/${projectId}/tasks/${taskId}`,
+        `/tasks/${taskId}`,
       );
       expect(res.status).toEqual(HttpStatus.NO_CONTENT);
     });
   });
 
-  describe('PATCH /projects/:projectId/tasks/:id', () => {
+  describe('PATCH /tasks/:id', () => {
     let taskId: number;
 
     beforeEach(async () => {
@@ -180,15 +182,17 @@ describe('TasksController', () => {
         title: 'Mock Task',
         projectId,
       };
+
       const res = await request(app.getHttpServer())
-        .post(`/projects/${projectId}/tasks`)
+        .post(`/tasks`)
         .send(createTaskDto);
-      taskId = Number.parseInt(res.body.id, 10);
+
+      taskId = parseInt(res.body.id);
     });
 
     it('should return 404 when a task does not exist', async () => {
       const res = await request(app.getHttpServer()).patch(
-        `/projects/${projectId}/tasks/0`,
+        `/tasks/0`,
       );
 
       expect(res.status).toEqual(HttpStatus.NOT_FOUND);
@@ -197,7 +201,7 @@ describe('TasksController', () => {
     it('should update a Task', async () => {
       const updateTaskDto: UpdateTaskDto = { title: 'Updated via PATCH' };
       const res = await request(app.getHttpServer())
-        .patch(`/projects/${projectId}/tasks/${taskId}`)
+        .patch(`/tasks/${taskId}`)
         .send(updateTaskDto);
 
       expect(res.status).toEqual(HttpStatus.OK);
