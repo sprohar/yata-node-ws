@@ -40,6 +40,11 @@ export class CreateTaskDto {
 
   @ApiProperty()
   @IsOptional()
+  @IsNumber()
+  sectionId?: number;
+
+  @ApiProperty()
+  @IsOptional()
   @IsString()
   @MaxLength(Task.Content.MAX_LENGTH)
   content?: string;
