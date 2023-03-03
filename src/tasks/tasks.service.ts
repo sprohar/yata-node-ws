@@ -87,6 +87,9 @@ export class TasksService {
         id,
       },
       data: updateTaskDto,
+      include: {
+        subtasks: true,
+      }
     });
   }
 
