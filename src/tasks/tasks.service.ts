@@ -38,8 +38,8 @@ export class TasksService {
       include: {
         subtasks: true,
       },
-      skip: params.skip,
-      take: params.take,
+      skip: +params.skip,
+      take: +params.take,
       orderBy: params.orderBy,
     });
 
