@@ -78,6 +78,10 @@ export class TasksService {
     if (!(await this.exists(id))) {
       return null;
     }
+    if (updateTaskDto.completed != undefined && !updateTaskDto.completed) {
+      updateTaskDto.completedOn = null;
+    }
+
     return this.prisma.task.update({
       where: {
         id,
