@@ -24,7 +24,7 @@ import { UpdateSubtaskDto } from './dto/update-subtask.dto';
 import { SubtasksService } from './subtasks.service';
 
 @ApiTags('Subtasks')
-@Controller('/tasks/:taskId/subtasks')
+@Controller('subtasks')
 export class SubtasksController {
   constructor(private readonly subtasksService: SubtasksService) {}
 
@@ -36,29 +36,6 @@ export class SubtasksController {
     }
 
     return subtask;
-  }
-
-  @Get()
-  async findAll(
-    @Param('taskId', ParseIntPipe) taskId,
-    @Query() query: TasksQueryParams,
-  ) {
-    const skip = query.skip ?? 0;
-    const take = query.take ?? 30;
-    const orderBy = {};
-    orderBy[`${query.orderBy ?? Task.OrderBy.DEFAULT}`] =
-      query.dir ?? Prisma.SortOrder.desc;
-
-    return await this.subtasksService.findAll({
-      skip,
-      take,
-      where: {
-        taskId,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
   }
 
   @Get(':id')

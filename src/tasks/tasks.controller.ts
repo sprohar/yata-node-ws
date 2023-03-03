@@ -10,14 +10,16 @@ import {
   ParseIntPipe,
   Patch,
   Post,
-  Query,
+  Query
 } from '@nestjs/common';
 import { BadRequestException } from '@nestjs/common/exceptions';
 import { ApiTags } from '@nestjs/swagger/dist/decorators';
 import { Prisma } from '@prisma/client';
 import { QueryParams } from '../dto/query-params.dto';
+import { SubtasksService } from '../subtasks/subtasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { TasksChronoQueryParamsDto } from './dto/tasks-chrono-query-params.dto';
+import { TasksQueryParams } from './dto/tasks-query-params.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { Task } from './entities/task.entity';
 import { TasksService } from './tasks.service';
@@ -25,7 +27,10 @@ import { TasksService } from './tasks.service';
 @ApiTags('Tasks')
 @Controller('tasks')
 export class TasksController {
-  constructor(private readonly tasksService: TasksService) {}
+  constructor(
+    private readonly tasksService: TasksService,
+    private readonly subtasksService: SubtasksService,
+  ) {}
 
   @Post()
   async create(@Body() createTaskDto: CreateTaskDto) {
@@ -119,6 +124,26 @@ export class TasksController {
       throw new NotFoundException();
     }
     return task;
+  }
+
+  @Get(':id/subtask')
+  async getSubtasks(@Param('id', ParseIntPipe) taskId: number, @Query() query: TasksQueryParams) {
+    const skip = query.skip ?? 0;
+    const take = query.take ?? 30;
+    const orderBy = {};
+    orderBy[`${query.orderBy ?? Task.OrderBy.DEFAULT}`] =
+      query.dir ?? Prisma.SortOrder.desc;
+
+    return await this.subtasksService.findAll({
+      skip,
+      take,
+      where: {
+        taskId,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
   }
 
   @Patch(':id')

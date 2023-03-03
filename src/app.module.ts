@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
-import { ProjectsModule } from './projects/projects.module';
-import { PrismaModule } from './prisma/prisma.module';
-import { TasksModule } from './tasks/tasks.module';
-import { ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { ThrottlerGuard } from '@nestjs/throttler/dist/throttler.guard';
-import { SubtasksModule } from './subtasks/subtasks.module';
+import { PrismaModule } from './prisma/prisma.module';
+import { ProjectsModule } from './projects/projects.module';
 import { SectionsModule } from './sections/sections.module';
+import { SubtasksModule } from './subtasks/subtasks.module';
+import { TasksModule } from './tasks/tasks.module';
 
 @Module({
   imports: [

@@ -1,9 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma, Subtask } from '@prisma/client';
-import {
-  PrismaClientKnownRequestError,
-  PrismaClientUnknownRequestError,
-} from '@prisma/client/runtime/library';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateSubtaskDto } from './dto/create-subtask.dto';
 import { UpdateSubtaskDto } from './dto/update-subtask.dto';

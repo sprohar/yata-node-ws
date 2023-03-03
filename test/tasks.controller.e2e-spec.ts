@@ -1,10 +1,11 @@
 import { HttpStatus, INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { UpdateTaskDto } from 'src/tasks/dto/update-task.dto';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/prisma/prisma.service';
+import { CreateSubtaskDto } from '../src/subtasks/dto/create-subtask.dto';
 import { CreateTaskDto } from '../src/tasks/dto/create-task.dto';
+import { UpdateTaskDto } from '../src/tasks/dto/update-task.dto';
 import { Task } from '../src/tasks/entities/task.entity';
 
 describe('TasksController', () => {
@@ -141,6 +142,38 @@ describe('TasksController', () => {
         `/tasks/${taskId}`,
       );
       expect(res.status).toEqual(HttpStatus.OK);
+      expect(res.body).toBeDefined();
+    });
+  });
+
+  describe('GET /tasks/:taskId/subtasks', () => {
+    let taskId: number;
+
+    beforeEach(async () => {
+      const createTaskDto: CreateTaskDto = {
+        projectId,
+        title: 'Task',
+      };
+
+      const res = await request(app.getHttpServer())
+        .post('/tasks')
+        .send(createTaskDto);
+
+      taskId = res.body.id;
+
+      const createSubtaskDto: CreateSubtaskDto = {
+        title: 'Subtask',
+        taskId,
+      }
+
+      await request(app.getHttpServer()).post('/subtasks').send(createSubtaskDto);
+    })
+
+    it('should return a paginated list of subtasks', async () => {
+      const res = await request(app.getHttpServer()).get(
+        `/tasks/${taskId}/subtasks`,
+      );
+
       expect(res.body).toBeDefined();
     });
   });
