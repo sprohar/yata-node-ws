@@ -36,7 +36,24 @@ export class SectionsService {
   }
 
   async update(id: number, updateSectionDto: UpdateSectionDto) {
+    const section = await this.prisma.section.findFirst({ where: { id }});
+    if (!section) {
+      return;
+    }
+
     try {
+      if (section.projectId !== updateSectionDto.projectId) {
+        // Move section and its tasks to a different project
+        await this.prisma.task.updateMany({
+          where: {
+            sectionId: section.id,
+          },
+          data: {
+            projectId: updateSectionDto.projectId,
+          }
+        })
+      }
+
       return await this.prisma.section.update({
         where: {
           id,
