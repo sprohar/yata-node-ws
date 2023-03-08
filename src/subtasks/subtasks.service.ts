@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma, Subtask } from '@prisma/client';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateSubtaskDto } from './dto/create-subtask.dto';
 import { UpdateSubtaskDto } from './dto/update-subtask.dto';
@@ -10,16 +9,6 @@ export class SubtasksService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(createSubtaskDto: CreateSubtaskDto): Promise<Subtask | null> {
-    const task = await this.prisma.task.findFirst({
-      where: {
-        id: createSubtaskDto.taskId,
-      },
-    });
-
-    if (!task) {
-      return null;
-    }
-
     return await this.prisma.subtask.create({
       data: createSubtaskDto,
     });
@@ -58,51 +47,29 @@ export class SubtasksService {
     };
   }
 
-  findOne(id: number) {
-    return this.prisma.subtask.findUnique({
+  async findOne(params: { where: Prisma.SubtaskWhereInput }) {
+    const { where } = params;
+    return await this.prisma.subtask.findFirst({
+      where,
+    });
+  }
+
+  async update(id: number, updateSubtaskDto: UpdateSubtaskDto) {
+    return await this.prisma.subtask.update({
+      data: updateSubtaskDto,
       where: {
         id,
       },
     });
   }
 
-  async update(id: number, updateSubtaskDto: UpdateSubtaskDto) {
-    try {
-      if (updateSubtaskDto.completed) {
-        updateSubtaskDto.completedOn = new Date().toISOString();
-      }
-      return await this.prisma.subtask.update({
-        data: updateSubtaskDto,
-        where: {
-          id,
-        },
-      });
-    } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError) {
-        const clientError: PrismaClientKnownRequestError = error;
-        if (clientError.code === 'P2025') {
-          console.error(`Could not update Subtask. Subtask ${id} does not exist.`);
-        }
-      }
+  async remove(params: {
+    where: Prisma.SubtaskWhereUniqueInput
+  }) {
+    const { where } = params;
 
-      return null;
-    }
-  }
-
-  async remove(id: number) {
-    try {
-      return await this.prisma.subtask.delete({
-        where: { id },
-      });
-    } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError) {
-        const clientError: PrismaClientKnownRequestError = error;
-        if (clientError.code === 'P2025') {
-          console.error(`Could not delete Subtask. Subtask ${id} does not exist.`);
-        }
-      }
-
-      return null;
-    }
+    return await this.prisma.subtask.delete({
+      where
+    });
   }
 }

@@ -5,10 +5,12 @@ import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { CreateSubtaskDto } from '../src/subtasks/dto/create-subtask.dto';
 import { UpdateSubtaskDto } from '../src/subtasks/dto/update-subtask.dto';
+import { CreateTaskDto } from '../src/tasks/dto/create-task.dto';
 
 describe('SubtasksController', () => {
   let app: INestApplication;
   let prismaService: PrismaService;
+  let projectId: number;
   let taskId: number;
   let subtaskId: number;
 
@@ -35,6 +37,7 @@ describe('SubtasksController', () => {
         name: 'Project 1',
       },
     });
+    projectId = project.id;
 
     const task = await prismaService.task.create({
       select: {
@@ -75,7 +78,41 @@ describe('SubtasksController', () => {
     await prisma.project.deleteMany();
   });
 
-  describe('POST subtasks', () => {
+  describe('[GET] Get Subtasks', () => {
+    let taskId: number;
+
+    beforeEach(async () => {
+      const createTaskDto: CreateTaskDto = {
+        projectId,
+        title: 'Task',
+      };
+
+      const res = await request(app.getHttpServer())
+        .post(`/tasks`)
+        .send(createTaskDto);
+
+      taskId = res.body.id;
+
+      const createSubtaskDto: CreateSubtaskDto = {
+        title: 'Subtask',
+        taskId,
+      };
+
+      await request(app.getHttpServer())
+        .post(`/tasks/${taskId}/subtasks`)
+        .send(createSubtaskDto);
+    });
+
+    it('should return a paginated list of subtasks', async () => {
+      const res = await request(app.getHttpServer()).get(
+        `/tasks/${taskId}/subtasks`,
+      );
+
+      expect(res.body).toBeDefined();
+    });
+  });
+
+  describe('[POST] Create a Subtask', () => {
     it('should return 400 Bad Request when the parent task does not exist', async () => {
       const createSubtaskDto: CreateSubtaskDto = {
         title: 'Subtask',
@@ -83,7 +120,7 @@ describe('SubtasksController', () => {
       };
 
       const res = await request(app.getHttpServer())
-        .post(`/subtasks`)
+        .post(`/tasks/${taskId}/subtasks`)
         .send(createSubtaskDto);
 
       expect(res.status).toEqual(HttpStatus.BAD_REQUEST);
@@ -96,39 +133,41 @@ describe('SubtasksController', () => {
       };
 
       const res = await request(app.getHttpServer())
-        .post(`/subtasks`)
+        .post(`/tasks/${taskId}/subtasks`)
         .send(createSubtaskDto);
 
       expect(res.status).toEqual(HttpStatus.CREATED);
     });
   });
 
-  describe('GET /subtasks/:id', () => {
+  describe('[GET] Get Subtask by Id', () => {
     it('should return 404 Not Found', async () => {
       const res = await request(app.getHttpServer()).get(
-        `/subtasks/0`,
+        `/tasks${taskId}/subtasks/${subtaskId}`,
       );
+
       expect(res.status).toEqual(HttpStatus.NOT_FOUND);
     });
 
     it('should return a Subtask', async () => {
       const res = await request(app.getHttpServer()).get(
-        `/subtasks/${subtaskId}`,
+        `/tasks/${taskId}/subtasks/${subtaskId}`,
       );
+
       expect(res.body).toBeDefined();
       expect(res.status).toEqual(HttpStatus.OK);
     });
   });
 
-  describe('PATCH /subtasks/:id', () => {
+  describe('[PATCH] Update a Subtask', () => {
     it('should return 404 Not Found', async () => {
       const updateSubtaskDto: UpdateSubtaskDto = {
         completed: true,
         taskId,
       };
-      console.log(updateSubtaskDto);
+
       const res = await request(app.getHttpServer())
-        .patch(`/subtasks/0`)
+        .patch(`/tasks/${taskId}/subtasks/0`)
         .send(updateSubtaskDto);
 
       expect(res.status).toEqual(HttpStatus.NOT_FOUND);
@@ -141,7 +180,7 @@ describe('SubtasksController', () => {
       };
 
       const res = await request(app.getHttpServer())
-        .patch(`/subtasks/${subtaskId}`)
+        .patch(`/tasks/${taskId}/subtasks/${subtaskId}`)
         .send(updateSubtaskDto);
 
       expect(res.status).toEqual(HttpStatus.OK);
@@ -151,15 +190,17 @@ describe('SubtasksController', () => {
   describe('DELETE /subtasks/:id', () => {
     it('should return 404 Not Found', async () => {
       const res = await request(app.getHttpServer()).delete(
-        `/subtasks/0`,
+        `/tasks${taskId}/subtasks/0`,
       );
+
       expect(res.status).toEqual(HttpStatus.NOT_FOUND);
     });
 
     it('should return 204 No Content when a Subtask was deleted', async () => {
       const res = await request(app.getHttpServer()).delete(
-        `/subtasks/${subtaskId}`,
+        `/tasks/${taskId}/subtasks/${subtaskId}`,
       );
+
       expect(res.status).toEqual(HttpStatus.NO_CONTENT);
     });
   });
