@@ -1,0 +1,2 @@
+DROP DATABASE yata_test;
+COMMIT;

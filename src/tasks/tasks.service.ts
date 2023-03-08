@@ -10,15 +10,16 @@ export class TasksService {
   constructor(private prisma: PrismaService) {}
 
   async create(createTaskDto: CreateTaskDto): Promise<Task> {
-    const projectExists =
-      (await this.prisma.project.count({
-        where: { id: createTaskDto.projectId },
-      })) != 0;
+    const projectExists = await this.projectExists(createTaskDto.projectId);
     if (!projectExists) {
       return null;
     }
+
     return this.prisma.task.create({
       data: createTaskDto,
+      include: {
+        subtasks: true,
+      },
     });
   }
 
@@ -89,7 +90,7 @@ export class TasksService {
       data: updateTaskDto,
       include: {
         subtasks: true,
-      }
+      },
     });
   }
 
@@ -107,5 +108,15 @@ export class TasksService {
 
   async exists(id: number): Promise<boolean> {
     return (await this.prisma.task.count({ where: { id } })) != 0;
+  }
+
+  private async projectExists(projectId: number) {
+    const count = await this.prisma.project.count({
+      where: {
+        id: projectId,
+      },
+    });
+
+    return count !== 0;
   }
 }

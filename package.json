@@ -15,6 +15,9 @@
     "db:dev:restart": "npm run db:dev:rm && npm run db:dev:up && npm run prisma:dev:deploy",
     "prisma:test:deploy": "dotenv -e .env.test -- prisma migrate deploy",
     "db:test:rm": "docker compose rm test-db --stop --force --volumes",
+    "native:db:drop": "npx dotenv -e .env.test -- prisma db execute --file ./scripts/sql/drop-db.sql --schema schema.prisma ",
+    "native:db:create": "npx dotenv -e .env.test -- prisma db execute --file ./scripts/sql/create-db.sql --schema schema.prisma ",
+    "native:db:restart": "npm run native:db:drop && npm run native:db:create",
     "db:test:up": "docker compose up test-db --detach",
     "db:test:restart": "npm run db:test:rm && npm run db:test:up && npm run prisma:test:deploy",
     "build": "nest build",
@@ -29,7 +32,9 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "pretest:e2e": "npm run db:test:restart",
-    "test:e2e": "dotenv -e .env.test -- jest --config ./test/jest-e2e.json --watch --no-cache --runInBand"
+    "test:e2e": "dotenv -e .env.test -- jest --config ./test/jest-e2e.json --watch --no-cache --runInBand",
+    "pretest:e2e:native:db": "npm run native:db:restart",
+    "e2e:test:native:db": "dotenv -e .env.test -- jest --config ./test/jest-e2e.json --watch --no-cache --runInBand"
   },
   "dependencies": {
     "@nestjs/common": "^9.0.0",
