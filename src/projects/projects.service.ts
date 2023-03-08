@@ -93,7 +93,13 @@ export class ProjectsService {
     });
   }
 
-  async exists(projectId: number): Promise<boolean> {
-    return (await this.prisma.project.count({ where: { id: projectId } })) != 0;
+  async exists(id: number): Promise<boolean> {
+    const count = await this.prisma.project.count({
+      where: {
+        id
+      }
+    });
+
+    return count > 0;
   }
 }

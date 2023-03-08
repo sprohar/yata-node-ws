@@ -10,35 +10,38 @@ import {
   ParseIntPipe,
   Patch,
   Post,
-  Query
+  Query,
 } from '@nestjs/common';
 import { BadRequestException } from '@nestjs/common/exceptions';
 import { ApiTags } from '@nestjs/swagger/dist/decorators';
 import { Prisma } from '@prisma/client';
 import { QueryParams } from '../dto/query-params.dto';
-import { SubtasksService } from '../subtasks/subtasks.service';
+import { ProjectsService } from '../projects/projects.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { TasksChronoQueryParamsDto } from './dto/tasks-chrono-query-params.dto';
-import { TasksQueryParams } from './dto/tasks-query-params.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { Task } from './entities/task.entity';
 import { TasksService } from './tasks.service';
 
 @ApiTags('Tasks')
-@Controller('tasks')
+@Controller('projects/:projectId/tasks')
 export class TasksController {
   constructor(
+    private readonly projectsService: ProjectsService,
     private readonly tasksService: TasksService,
-    private readonly subtasksService: SubtasksService,
   ) {}
 
   @Post()
-  async create(@Body() createTaskDto: CreateTaskDto) {
-    const task = await this.tasksService.create(createTaskDto);
-    if (!task) {
+  async create(
+    @Param('projectId', ParseIntPipe) projectId: number,
+    @Body() createTaskDto: CreateTaskDto,
+  ) {
+    const projectExists = await this.projectsService.exists(projectId);
+    if (!projectExists) {
       throw new BadRequestException('Project does not exist.');
     }
-    return task;
+
+    return await this.tasksService.create(createTaskDto);
   }
 
   @Get('chrono')
@@ -89,7 +92,10 @@ export class TasksController {
   }
 
   @Get('chrono/today')
-  async getTodaysTasks(@Query() query: QueryParams) {
+  async getTodaysTasks(
+    @Param('projectId', ParseIntPipe) projectId: number,
+    @Query() query: QueryParams,
+  ) {
     const skip = query.skip ?? QueryParams.SKIP_DEFAULT;
     const take = query.take ?? QueryParams.TAKE_DEFAULT;
     const upperBound = new Date();
@@ -109,6 +115,7 @@ export class TasksController {
         dueDate: Prisma.SortOrder.asc,
       },
       where: {
+        projectId,
         dueDate: {
           lte: upperBound,
           gte: lowerBound,
@@ -118,58 +125,64 @@ export class TasksController {
   }
 
   @Get(':id')
-  async findOne(@Param('id', ParseIntPipe) id: number) {
-    const task = await this.tasksService.findOne(id);
-    if (!task) {
+  async findOne(
+    @Param('projectId', ParseIntPipe) projectId: number,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    try {
+      return await this.tasksService.findOne({
+        where: {
+          id,
+          projectId,
+        },
+      });
+    } catch (error) {
       throw new NotFoundException();
     }
-    return task;
-  }
-
-  @Get(':id/subtask')
-  async getSubtasks(@Param('id', ParseIntPipe) taskId: number, @Query() query: TasksQueryParams) {
-    const skip = query.skip ?? 0;
-    const take = query.take ?? 30;
-    const orderBy = {};
-    orderBy[`${query.orderBy ?? Task.OrderBy.DEFAULT}`] =
-      query.dir ?? Prisma.SortOrder.desc;
-
-    return await this.subtasksService.findAll({
-      skip,
-      take,
-      where: {
-        taskId,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
   }
 
   @Patch(':id')
   async update(
+    @Param('projectId', ParseIntPipe) projectId: number,
     @Param('id', ParseIntPipe) id: number,
     @Body() updateTaskDto: UpdateTaskDto,
   ) {
-    if (updateTaskDto.completed) {
-      updateTaskDto.completedOn = new Date().toISOString();
+    const projectExists = await this.projectsService.exists(projectId);
+    if (!projectExists) {
+      throw new BadRequestException();
     }
 
-    const task = await this.tasksService.update(id, updateTaskDto);
-    if (!task) {
+    if (updateTaskDto.completed) {
+      updateTaskDto.completedOn = new Date().toISOString();
+    } else if (
+      updateTaskDto.completed !== undefined &&
+      !updateTaskDto.completed
+    ) {
+      updateTaskDto.completedOn = null;
+    }
+
+    try {
+      return await this.tasksService.update(id, updateTaskDto);
+    } catch (error) {
       throw new NotFoundException();
     }
-    return task;
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(@Param('id', ParseIntPipe) id: number) {
-    const task = await this.tasksService.remove(id);
-    if (!task) {
-      throw new NotFoundException();
+  async remove(
+    @Param('projectId', ParseIntPipe) projectId: number,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    const projectExists = await this.projectsService.exists(projectId);
+    if (!projectExists) {
+      throw new BadRequestException();
     }
 
-    return HttpStatus.NO_CONTENT;
+    try {
+      return await this.tasksService.remove(id);
+    } catch (error) {
+      throw new NotFoundException();
+    }
   }
 }

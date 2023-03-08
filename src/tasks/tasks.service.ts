@@ -10,12 +10,7 @@ export class TasksService {
   constructor(private prisma: PrismaService) {}
 
   async create(createTaskDto: CreateTaskDto): Promise<Task> {
-    const projectExists = await this.projectExists(createTaskDto.projectId);
-    if (!projectExists) {
-      return null;
-    }
-
-    return this.prisma.task.create({
+    return await this.prisma.task.create({
       data: createTaskDto,
       include: {
         subtasks: true,
@@ -64,11 +59,10 @@ export class TasksService {
     };
   }
 
-  async findOne(id: number): Promise<Task> {
-    return this.prisma.task.findFirst({
-      where: {
-        id,
-      },
+  async findOne(params: {where: Prisma.TaskWhereInput}): Promise<Task> {
+    const { where } = params;
+    return await this.prisma.task.findFirst({
+      where,
       include: {
         subtasks: true,
       },
@@ -76,14 +70,7 @@ export class TasksService {
   }
 
   async update(id: number, updateTaskDto: UpdateTaskDto): Promise<Task> {
-    if (!(await this.exists(id))) {
-      return null;
-    }
-    if (updateTaskDto.completed != undefined && !updateTaskDto.completed) {
-      updateTaskDto.completedOn = null;
-    }
-
-    return this.prisma.task.update({
+    return await this.prisma.task.update({
       where: {
         id,
       },
@@ -94,29 +81,19 @@ export class TasksService {
     });
   }
 
+  /**
+   * @see https://www.prisma.io/docs/reference/api-reference/prisma-client-reference#delete
+   * @param where
+   * @returns The Task that was deleted or `null` if the record was not found.
+   */
   async remove(id: number): Promise<Task> {
-    if (!(await this.exists(id))) {
-      return null;
-    }
-
-    return this.prisma.task.delete({
-      where: {
-        id,
-      },
+    return await this.prisma.task.delete({
+      where: { id },
     });
   }
 
-  async exists(id: number): Promise<boolean> {
-    return (await this.prisma.task.count({ where: { id } })) != 0;
-  }
-
-  private async projectExists(projectId: number) {
-    const count = await this.prisma.project.count({
-      where: {
-        id: projectId,
-      },
-    });
-
-    return count !== 0;
+  async exists(id: number) {
+    const count = await this.prisma.task.count({ where: { id } });
+    return count > 0;
   }
 }

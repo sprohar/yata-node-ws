@@ -3,10 +3,18 @@ import { Test, TestingModule } from '@nestjs/testing';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/prisma/prisma.service';
-import { CreateSubtaskDto } from '../src/subtasks/dto/create-subtask.dto';
 import { CreateTaskDto } from '../src/tasks/dto/create-task.dto';
 import { UpdateTaskDto } from '../src/tasks/dto/update-task.dto';
 import { Task } from '../src/tasks/entities/task.entity';
+
+const resourcePathFrom = (projectId: number, taskId?: number) => {
+  const path = `/projects/${projectId}/tasks`;
+  if (taskId !== undefined) {
+    return `${path}/${taskId}`;
+  }
+
+  return path;
+};
 
 describe('TasksController', () => {
   let app: INestApplication;
@@ -40,11 +48,11 @@ describe('TasksController', () => {
     await prisma.project.deleteMany();
   });
 
-  describe('POST /tasks', () => {
+  describe('POST Create task', () => {
     describe('Validation', () => {
       it('should return 400 when given an invalid priority value', async () => {
         const res = await request(app.getHttpServer())
-          .post(`/tasks`)
+          .post(resourcePathFrom(projectId))
           .send({
             name: 'Task',
             projectId: projectId,
@@ -60,7 +68,7 @@ describe('TasksController', () => {
           dueDate: '10-10-2010',
         };
         const res = await request(app.getHttpServer())
-          .post(`/tasks`)
+          .post(resourcePathFrom(projectId))
           .send(createTaskDto);
         expect(res.status).toEqual(HttpStatus.BAD_REQUEST);
       });
@@ -71,7 +79,7 @@ describe('TasksController', () => {
           projectId,
         };
         const res = await request(app.getHttpServer())
-          .post(`/tasks`)
+          .post(resourcePathFrom(projectId))
           .send(createTaskDto);
         expect(res.status).toEqual(HttpStatus.BAD_REQUEST);
       });
@@ -83,7 +91,7 @@ describe('TasksController', () => {
           content: ' '.repeat(Task.Content.MAX_LENGTH + 1),
         };
         const res = await request(app.getHttpServer())
-          .post(`/tasks`)
+          .post(resourcePathFrom(projectId))
           .send(createTaskDto);
         expect(res.status).toEqual(HttpStatus.BAD_REQUEST);
       });
@@ -96,8 +104,9 @@ describe('TasksController', () => {
       };
 
       const res = await request(app.getHttpServer())
-        .post('/tasks')
+        .post(resourcePathFrom(createTaskDto.projectId))
         .send(createTaskDto);
+
       expect(res.status).toEqual(HttpStatus.BAD_REQUEST);
     });
 
@@ -108,13 +117,14 @@ describe('TasksController', () => {
       };
 
       const res = await request(app.getHttpServer())
-        .post(`/tasks`)
+        .post(resourcePathFrom(projectId))
         .send(createTaskDto);
+
       expect(res.status).toEqual(HttpStatus.CREATED);
     });
   });
 
-  describe('GET /tasks/:taskId', () => {
+  describe('GET Get task by id', () => {
     let taskId: number;
 
     beforeEach(async () => {
@@ -124,61 +134,32 @@ describe('TasksController', () => {
       };
 
       const res = await request(app.getHttpServer())
-        .post(`/tasks`)
+        .post(resourcePathFrom(projectId))
         .send(createTaskDto);
 
       taskId = parseInt(res.body.id);
     });
 
     it('should return 404 when a task does not exist', async () => {
+      const taskId = 0;
       const res = await request(app.getHttpServer()).get(
-        `/tasks/0`,
+        resourcePathFrom(projectId, taskId),
       );
+
       expect(res.status).toEqual(HttpStatus.NOT_FOUND);
     });
 
     it('should return a Task', async () => {
       const res = await request(app.getHttpServer()).get(
-        `/tasks/${taskId}`,
+        resourcePathFrom(projectId, taskId),
       );
+
       expect(res.status).toEqual(HttpStatus.OK);
       expect(res.body).toBeDefined();
     });
   });
 
-  describe('GET /tasks/:taskId/subtasks', () => {
-    let taskId: number;
-
-    beforeEach(async () => {
-      const createTaskDto: CreateTaskDto = {
-        projectId,
-        title: 'Task',
-      };
-
-      const res = await request(app.getHttpServer())
-        .post('/tasks')
-        .send(createTaskDto);
-
-      taskId = res.body.id;
-
-      const createSubtaskDto: CreateSubtaskDto = {
-        title: 'Subtask',
-        taskId,
-      }
-
-      await request(app.getHttpServer()).post('/subtasks').send(createSubtaskDto);
-    })
-
-    it('should return a paginated list of subtasks', async () => {
-      const res = await request(app.getHttpServer()).get(
-        `/tasks/${taskId}/subtasks`,
-      );
-
-      expect(res.body).toBeDefined();
-    });
-  });
-
-  describe('DELETE /tasks/:id', () => {
+  describe('DELETE Delete a task', () => {
     let taskId: number;
 
     beforeEach(async () => {
@@ -186,28 +167,33 @@ describe('TasksController', () => {
         title: 'Mock Task',
         projectId,
       };
+
       const res = await request(app.getHttpServer())
-        .post(`/tasks`)
+        .post(resourcePathFrom(projectId))
         .send(createTaskDto);
+
       taskId = Number.parseInt(res.body.id, 10);
     });
 
     it('should return 404 when a task does not exist', async () => {
+      const taskId = 0;
       const res = await request(app.getHttpServer()).delete(
-        `/tasks/0`,
+        resourcePathFrom(projectId, taskId),
       );
+
       expect(res.status).toEqual(HttpStatus.NOT_FOUND);
     });
 
     it('should delete a Task', async () => {
       const res = await request(app.getHttpServer()).delete(
-        `/tasks/${taskId}`,
+        resourcePathFrom(projectId, taskId),
       );
+
       expect(res.status).toEqual(HttpStatus.NO_CONTENT);
     });
   });
 
-  describe('PATCH /tasks/:id', () => {
+  describe('PATCH Update task', () => {
     let taskId: number;
 
     beforeEach(async () => {
@@ -217,15 +203,16 @@ describe('TasksController', () => {
       };
 
       const res = await request(app.getHttpServer())
-        .post(`/tasks`)
+        .post(resourcePathFrom(projectId))
         .send(createTaskDto);
 
       taskId = parseInt(res.body.id);
     });
 
     it('should return 404 when a task does not exist', async () => {
+      const taskId = 0;
       const res = await request(app.getHttpServer()).patch(
-        `/tasks/0`,
+        resourcePathFrom(projectId, taskId),
       );
 
       expect(res.status).toEqual(HttpStatus.NOT_FOUND);
@@ -234,7 +221,7 @@ describe('TasksController', () => {
     it('should update a Task', async () => {
       const updateTaskDto: UpdateTaskDto = { title: 'Updated via PATCH' };
       const res = await request(app.getHttpServer())
-        .patch(`/tasks/${taskId}`)
+        .patch(resourcePathFrom(projectId, taskId))
         .send(updateTaskDto);
 
       expect(res.status).toEqual(HttpStatus.OK);
