@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma, Task } from '@prisma/client';
 import { PaginatedList } from 'src/interfaces/paginated-list.interface';
+import { threadId } from 'worker_threads';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
@@ -15,6 +16,32 @@ export class TasksService {
       include: {
         subtasks: true,
       },
+    });
+  }
+
+  async duplicate(taskId: number) {
+    const task = await this.prisma.task.findUnique({ where: { id: taskId } });
+    const subtasks = await this.prisma.subtask.findMany({
+      where: {
+        taskId,
+      },
+    });
+
+    delete task.id;
+    subtasks.forEach((subtask) => delete subtask.id && delete subtask.taskId);
+
+    return await this.prisma.task.create({
+      data: {
+        ...task,
+        subtasks: {
+          createMany: {
+            data: subtasks,
+          },
+        },
+      },
+      include: {
+        subtasks: true,
+      }
     });
   }
 
@@ -59,7 +86,7 @@ export class TasksService {
     };
   }
 
-  async findOne(params: {where: Prisma.TaskWhereInput}): Promise<Task> {
+  async findOne(params: { where: Prisma.TaskWhereInput }): Promise<Task> {
     const { where } = params;
     return await this.prisma.task.findFirst({
       where,

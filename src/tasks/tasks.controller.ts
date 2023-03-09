@@ -141,6 +141,28 @@ export class TasksController {
     }
   }
 
+  @Post(':id/duplicate')
+  async duplicate(
+    @Param('projectId', ParseIntPipe) projectId: number,
+    @Param('id', ParseIntPipe) taskId: number,
+  ) {
+    const projectExists = await this.projectsService.exists(projectId);
+    if (!projectExists) {
+      throw new BadRequestException();
+    }
+
+    const taskExists = await this.tasksService.exists(taskId);
+    if (!taskExists) {
+      throw new BadRequestException();
+    }
+
+    try {
+      return this.tasksService.duplicate(taskId);
+    } catch (error) {
+      throw new BadRequestException();
+    }
+  }
+
   @Patch(':id')
   async update(
     @Param('projectId', ParseIntPipe) projectId: number,
