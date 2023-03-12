@@ -7,6 +7,7 @@ import { ProjectsModule } from './projects/projects.module';
 import { SectionsModule } from './sections/sections.module';
 import { SubtasksModule } from './subtasks/subtasks.module';
 import { TasksModule } from './tasks/tasks.module';
+import { TagsModule } from './tags/tags.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { TasksModule } from './tasks/tasks.module';
     }),
     SubtasksModule,
     SectionsModule,
+    TagsModule,
   ],
   controllers: [],
   providers: [
