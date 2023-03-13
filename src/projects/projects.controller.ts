@@ -15,8 +15,6 @@ import {
 import { ApiTags } from '@nestjs/swagger/dist';
 import { Prisma } from '@prisma/client';
 import { QueryParams } from '../dto/query-params.dto';
-import { TasksQueryParams } from '../tasks/dto/tasks-query-params.dto';
-import { Task } from '../tasks/entities/task.entity';
 import { TasksService } from '../tasks/tasks.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { ProjectsQueryParams } from './dto/projects-query-params.dto';
@@ -56,43 +54,6 @@ export class ProjectsController {
       throw new NotFoundException();
     }
     return project;
-  }
-
-  @Get(':id/tasks')
-  async getProjectTasks(
-    @Param('id', ParseIntPipe) projectId: number,
-    @Query() query: TasksQueryParams,
-  ) {
-    const orderBy = {};
-    orderBy[`${query.orderBy ?? Task.OrderBy.DEFAULT}`] =
-      query.dir ?? Prisma.SortOrder.desc;
-
-    let where: Prisma.TaskWhereInput = {
-      projectId,
-    };
-
-    if (query.title) {
-      where = {
-        ...where,
-        content: {
-          contains: query.title,
-        },
-      };
-    }
-    if (query.priority) {
-      where = {
-        ...where,
-        priority: query.priority,
-      };
-    }
-
-    const { skip, take } = query;
-    return await this.tasksService.findAll({
-      skip: skip ? parseInt(skip) : QueryParams.SKIP_DEFAULT,
-      take: take ? parseInt(take) : QueryParams.TAKE_DEFAULT,
-      where,
-      orderBy,
-    });
   }
 
   @Patch(':id')

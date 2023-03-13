@@ -18,7 +18,9 @@ import { Prisma } from '@prisma/client';
 import { QueryParams } from '../dto/query-params.dto';
 import { ProjectsService } from '../projects/projects.service';
 import { CreateTaskDto } from './dto/create-task.dto';
+import { TasksQueryParams } from './dto/tasks-query-params.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
+import { Task } from './entities/task.entity';
 import { TasksService } from './tasks.service';
 
 @ApiTags('Tasks')
@@ -43,15 +45,42 @@ export class TasksController {
   }
 
   @Get()
-  async getAll(@Query() query: QueryParams) {
-    const { skip, take } = query;
+  async getAll(
+    @Param('projectId', ParseIntPipe) projectId: number,
+    @Query() query: TasksQueryParams,
+  ) {
+    const orderBy = {};
+    orderBy[`${query.orderBy ?? Task.OrderBy.DEFAULT}`] =
+      query.dir ?? Prisma.SortOrder.desc;
 
+    let where: Prisma.TaskWhereInput = {
+      projectId,
+    };
+
+    if (query.title) {
+      where = {
+        ...where,
+        content: {
+          contains: query.title,
+        },
+      };
+    }
+    if (query.priority) {
+      where = {
+        ...where,
+        priority: query.priority,
+      };
+    }
+
+    const { skip, take } = query;
     return await this.tasksService.findAll({
       skip: skip ? parseInt(skip) : QueryParams.SKIP_DEFAULT,
       take: take ? parseInt(take) : QueryParams.TAKE_DEFAULT,
-      orderBy: {
-        createdAt: Prisma.SortOrder.asc,
-      },
+      where,
+      orderBy,
+      include: {
+        subtasks: true,
+      }
     });
   }
 
