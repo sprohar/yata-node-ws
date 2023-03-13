@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma, Project } from '@prisma/client';
+import { QueryParams } from '../dto/query-params.dto';
 import { PaginatedList } from '../interfaces/paginated-list.interface';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateProjectDto } from './dto/create-project.dto';
@@ -16,21 +17,15 @@ export class ProjectsService {
   }
 
   async findAll(params: {
-    skip?: number;
-    take?: number;
+    skip: number;
+    take: number;
     cursor?: Prisma.ProjectWhereUniqueInput;
     where: Prisma.ProjectWhereInput;
     orderBy?: Prisma.ProjectOrderByWithRelationInput;
   }): Promise<PaginatedList<Project>> {
-    if (!params.skip) {
-      params.skip = 0;
-    }
-    if (!params.take) {
-      params.take = 30;
-    }
     if (!params.orderBy) {
       params.orderBy = {
-        name: 'asc',
+        name: Prisma.SortOrder.asc,
       };
     }
 
@@ -38,8 +33,8 @@ export class ProjectsService {
       where: params.where,
     });
 
-    params.skip = +params.skip;
-    params.take = +params.take;
+    params.skip = params.skip;
+    params.take = Math.min(params.take, QueryParams.TAKE_MAX);
     const data = await this.prisma.project.findMany({
       ...params,
     });
@@ -96,8 +91,8 @@ export class ProjectsService {
   async exists(id: number): Promise<boolean> {
     const count = await this.prisma.project.count({
       where: {
-        id
-      }
+        id,
+      },
     });
 
     return count > 0;

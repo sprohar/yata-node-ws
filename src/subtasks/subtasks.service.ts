@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma, Subtask } from '@prisma/client';
+import { QueryParams } from '../dto/query-params.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateSubtaskDto } from './dto/create-subtask.dto';
 import { UpdateSubtaskDto } from './dto/update-subtask.dto';
@@ -15,8 +16,8 @@ export class SubtasksService {
   }
 
   async findAll(params: {
-    skip?: number;
-    take?: number;
+    skip: number;
+    take: number;
     cursor?: Prisma.SubtaskWhereUniqueInput;
     where?: Prisma.SubtaskWhereInput;
     orderBy?: Prisma.SubtaskOrderByWithRelationInput;
@@ -25,11 +26,12 @@ export class SubtasksService {
       where: params.where,
     });
 
+    const { skip, take, orderBy, where } = params;
     const subtasks = await this.prisma.subtask.findMany({
-      where: params.where,
-      skip: +params.skip,
-      take: +params.take,
-      orderBy: params.orderBy,
+      where,
+      skip,
+      take: Math.min(take, QueryParams.TAKE_MAX),
+      orderBy,
     });
 
     // Remove undefined and null fields

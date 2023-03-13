@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma, Task } from '@prisma/client';
-import { PaginatedList } from 'src/interfaces/paginated-list.interface';
+import { QueryParams } from '../dto/query-params.dto';
+import { PaginatedList } from '../interfaces/paginated-list.interface';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
@@ -40,13 +41,13 @@ export class TasksService {
       },
       include: {
         subtasks: true,
-      }
+      },
     });
   }
 
   async findAll(params: {
-    skip?: number;
-    take?: number;
+    skip: number;
+    take: number;
     cursor?: Prisma.TaskWhereUniqueInput;
     where?: Prisma.TaskWhereInput;
     orderBy?: Prisma.TaskOrderByWithRelationInput;
@@ -55,13 +56,14 @@ export class TasksService {
       where: params.where,
     });
 
+    const { skip, take } = params;
     const tasks = await this.prisma.task.findMany({
       where: params.where,
       include: {
         subtasks: true,
       },
-      skip: +params.skip,
-      take: +params.take,
+      skip,
+      take: Math.min(take, QueryParams.TAKE_MAX),
       orderBy: params.orderBy,
     });
 
