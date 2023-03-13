@@ -8,6 +8,7 @@ import { SectionsModule } from './sections/sections.module';
 import { SubtasksModule } from './subtasks/subtasks.module';
 import { TasksModule } from './tasks/tasks.module';
 import { TagsModule } from './tags/tags.module';
+import { ChronoModule } from './chrono/chrono.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { TagsModule } from './tags/tags.module';
     SubtasksModule,
     SectionsModule,
     TagsModule,
+    ChronoModule,
   ],
   controllers: [],
   providers: [
