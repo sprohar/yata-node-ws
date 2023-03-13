@@ -51,17 +51,17 @@ export class TasksService {
     cursor?: Prisma.TaskWhereUniqueInput;
     where?: Prisma.TaskWhereInput;
     orderBy?: Prisma.TaskOrderByWithRelationInput;
+    include?: Prisma.TaskInclude;
   }): Promise<PaginatedList<Task>> {
     const count = await this.prisma.task.count({
       where: params.where,
     });
 
     const { skip, take } = params;
+    this.prisma.task.findMany();
     const tasks = await this.prisma.task.findMany({
       where: params.where,
-      include: {
-        subtasks: true,
-      },
+      include: params.include,
       skip,
       take: Math.min(take, QueryParams.TAKE_MAX),
       orderBy: params.orderBy,
@@ -70,7 +70,7 @@ export class TasksService {
     // Remove undefined and null fields
     tasks.forEach((task) => {
       Object.keys(task).forEach((key) => task[key] == null && delete task[key]);
-      if (task.subtasks.length) {
+      if (task.subtasks && task.subtasks.length) {
         task.subtasks.forEach((subtask) => {
           Object.keys(subtask).forEach(
             (key) => subtask[key] == null && delete subtask[key],
