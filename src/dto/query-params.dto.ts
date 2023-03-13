@@ -10,10 +10,12 @@ export class QueryParams {
   @IsNumberString()
   @ApiProperty({ description: 'The page index', required: false, default: 0 })
   @IsOptional()
+  skip?: string;
 
   @IsNumberString()
   @ApiProperty({ description: 'The page size', required: false, default: 30 })
   @IsOptional()
+  take?: string;
 
   @ApiProperty({
     enum: Prisma.SortOrder,

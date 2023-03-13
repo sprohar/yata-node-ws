@@ -10,9 +10,12 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { BadRequestException } from '@nestjs/common/exceptions';
 import { ApiTags } from '@nestjs/swagger/dist/decorators';
+import { Prisma } from '@prisma/client';
+import { QueryParams } from '../dto/query-params.dto';
 import { ProjectsService } from '../projects/projects.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
@@ -37,6 +40,19 @@ export class TasksController {
     }
 
     return await this.tasksService.create(createTaskDto);
+  }
+
+  @Get()
+  async getAll(@Query() query: QueryParams) {
+    const { skip, take } = query;
+
+    return await this.tasksService.findAll({
+      skip: skip ? parseInt(skip) : QueryParams.SKIP_DEFAULT,
+      take: take ? parseInt(take) : QueryParams.TAKE_DEFAULT,
+      orderBy: {
+        createdAt: Prisma.SortOrder.asc,
+      },
+    });
   }
 
   @Get(':id')

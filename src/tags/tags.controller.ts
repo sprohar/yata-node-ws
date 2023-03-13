@@ -14,10 +14,11 @@ import { TagsService } from './tags.service';
 import { CreateTagDto } from './dto/create-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
 import { QueryParams } from '../dto/query-params.dto';
+import { Prisma } from '@prisma/client';
 
 @Controller('tags')
 export class TagsController {
-  constructor(private readonly tagsService: TagsService) { }
+  constructor(private readonly tagsService: TagsService) {}
 
   @Post()
   async create(@Body() createTagDto: CreateTagDto) {
@@ -26,11 +27,12 @@ export class TagsController {
 
   @Get()
   async findAll(@Query() query: QueryParams) {
+    const { skip, take } = query;
     return await this.tagsService.findAll({
-      skip: query.skip ?? QueryParams.SKIP_DEFAULT,
-      take: query.take ?? QueryParams.TAKE_DEFAULT,
+      skip: skip ? parseInt(skip) : QueryParams.SKIP_DEFAULT,
+      take: take ? parseInt(take) : QueryParams.TAKE_DEFAULT,
       orderBy: {
-        name: 'asc',
+        name: Prisma.SortOrder.asc,
       },
     });
   }
@@ -43,11 +45,11 @@ export class TagsController {
   @Patch(':id')
   async update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() updateTagDto: UpdateTagDto
+    @Body() updateTagDto: UpdateTagDto,
   ) {
     const tagExists = await this.tagsService.exists(id);
     if (!tagExists) {
-      throw new NotFoundException()
+      throw new NotFoundException();
     }
 
     return await this.tagsService.update(id, updateTagDto);
@@ -57,7 +59,7 @@ export class TagsController {
   async remove(@Param('id', ParseIntPipe) id: number) {
     const tagExists = await this.tagsService.exists(id);
     if (!tagExists) {
-      throw new NotFoundException()
+      throw new NotFoundException();
     }
 
     return await this.tagsService.remove(id);

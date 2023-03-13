@@ -17,6 +17,7 @@ import {
 import { ParseIntPipe } from '@nestjs/common/pipes';
 import { ApiTags } from '@nestjs/swagger';
 import { Prisma } from '@prisma/client';
+import { QueryParams } from '../dto/query-params.dto';
 import { TasksQueryParams } from '../tasks/dto/tasks-query-params.dto';
 import { Task } from '../tasks/entities/task.entity';
 import { TasksService } from '../tasks/tasks.service';
@@ -56,20 +57,19 @@ export class SubtasksController {
     @Param('id', ParseIntPipe) taskId: number,
     @Query() query: TasksQueryParams,
   ) {
-    const skip = query.skip ?? 0;
-    const take = query.take ?? 30;
     const orderBy = {};
     orderBy[`${query.orderBy ?? Task.OrderBy.DEFAULT}`] =
       query.dir ?? Prisma.SortOrder.desc;
 
+    const { skip, take } = query;
     return await this.subtasksService.findAll({
-      skip,
-      take,
+      skip: skip ? parseInt(skip) : QueryParams.SKIP_DEFAULT,
+      take: take ? parseInt(take) : QueryParams.TAKE_DEFAULT,
       where: {
         taskId,
       },
       orderBy: {
-        createdAt: 'desc',
+        createdAt: Prisma.SortOrder.desc,
       },
     });
   }

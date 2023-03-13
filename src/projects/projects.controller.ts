@@ -14,6 +14,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger/dist';
 import { Prisma } from '@prisma/client';
+import { QueryParams } from '../dto/query-params.dto';
 import { TasksQueryParams } from '../tasks/dto/tasks-query-params.dto';
 import { Task } from '../tasks/entities/task.entity';
 import { TasksService } from '../tasks/tasks.service';
@@ -37,10 +38,14 @@ export class ProjectsController {
 
   @Get()
   async findAll(@Query() query: ProjectsQueryParams) {
+    const { skip, take } = query;
     return await this.projectsService.findAll({
-      skip: query.skip,
-      take: query.take,
+      skip: skip ? parseInt(skip) : QueryParams.SKIP_DEFAULT,
+      take: take ? parseInt(take) : QueryParams.TAKE_DEFAULT,
       where: {},
+      orderBy: {
+        name: Prisma.SortOrder.asc,
+      },
     });
   }
 
@@ -58,8 +63,6 @@ export class ProjectsController {
     @Param('id', ParseIntPipe) projectId: number,
     @Query() query: TasksQueryParams,
   ) {
-    const skip = query.skip ?? 0;
-    const take = query.take ?? 30;
     const orderBy = {};
     orderBy[`${query.orderBy ?? Task.OrderBy.DEFAULT}`] =
       query.dir ?? Prisma.SortOrder.desc;
@@ -83,9 +86,10 @@ export class ProjectsController {
       };
     }
 
+    const { skip, take } = query;
     return await this.tasksService.findAll({
-      skip,
-      take,
+      skip: skip ? parseInt(skip) : QueryParams.SKIP_DEFAULT,
+      take: take ? parseInt(take) : QueryParams.TAKE_DEFAULT,
       where,
       orderBy,
     });

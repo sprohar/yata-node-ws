@@ -44,20 +44,19 @@ export class ChronoController {
       return [];
     }
 
+    const { skip, take } = query;
     return await this.tasksService.findAll({
       where: this.timespanPredicate(query),
       orderBy: {
         dueDate: Prisma.SortOrder.asc,
       },
-      skip: query.skip ?? QueryParams.SKIP_DEFAULT,
-      take: query.take ?? QueryParams.TAKE_DEFAULT,
+      skip: skip ? parseInt(skip) : QueryParams.SKIP_DEFAULT,
+      take: take ? parseInt(take) : QueryParams.TAKE_DEFAULT,
     });
   }
 
   @Get('today/tasks')
   async getTodaysTasks(@Query() query: QueryParams) {
-    const skip = query.skip ?? QueryParams.SKIP_DEFAULT;
-    const take = query.take ?? QueryParams.TAKE_DEFAULT;
     const upperBound = new Date();
     upperBound.setHours(23);
     upperBound.setMinutes(59);
@@ -68,9 +67,10 @@ export class ChronoController {
     lowerBound.setMinutes(0);
     lowerBound.setSeconds(0);
 
+    const { skip, take } = query;
     return await this.tasksService.findAll({
-      skip,
-      take,
+      skip: skip ? parseInt(skip) : QueryParams.SKIP_DEFAULT,
+      take: take ? parseInt(take) : QueryParams.TAKE_DEFAULT,
       orderBy: {
         dueDate: Prisma.SortOrder.asc,
       },
