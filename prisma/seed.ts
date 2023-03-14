@@ -1,10 +1,18 @@
-import { PrismaClient, Section, Task } from '@prisma/client';
+import { PrismaClient, Section } from '@prisma/client';
 const prisma = new PrismaClient();
 
 const main = async () => {
+  const user = await prisma.user.create({
+    data: {
+      email: 'daniel@sprohar.dev',
+      pwd: 'password@123',
+    },
+  });
+
   const projects = await prisma.project.create({
     data: {
       name: 'Yata API',
+      userId: user.id,
       sections: {
         create: [
           { name: 'To-Do' },
@@ -22,18 +30,21 @@ const main = async () => {
         title: 'Create controllers',
         projectId: projects.id,
         sectionId: 1,
+        userId: user.id,
       },
       {
         title: 'Create services',
         projectId: projects.id,
         sectionId: 1,
+        userId: user.id,
       },
       {
         title: 'e2e tests',
         projectId: projects.id,
         sectionId: 1,
+        userId: user.id,
       },
-    ] ,
+    ],
   });
 
   await prisma.subtask.createMany({
@@ -50,7 +61,7 @@ const main = async () => {
         title: 'Tags',
         taskId: 1,
       },
-    ]
+    ],
   });
 };
 

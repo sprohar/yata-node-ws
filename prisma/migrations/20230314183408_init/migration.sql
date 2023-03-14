@@ -2,14 +2,26 @@
 CREATE TYPE "project_view" AS ENUM ('LIST', 'KANBAN');
 
 -- CreateTable
+CREATE TABLE "user" (
+    "id" SERIAL NOT NULL,
+    "email" TEXT NOT NULL,
+    "pwd" TEXT NOT NULL,
+    "username" TEXT,
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ,
+
+    CONSTRAINT "user_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "project" (
     "id" SERIAL NOT NULL,
     "name" VARCHAR(64) NOT NULL,
-    "owner_id" TEXT,
     "important" BOOLEAN NOT NULL DEFAULT false,
-    "project_view" "project_view" NOT NULL DEFAULT 'LIST',
+    "view" "project_view" NOT NULL DEFAULT 'LIST',
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ,
+    "user_id" INTEGER NOT NULL,
 
     CONSTRAINT "project_pkey" PRIMARY KEY ("id")
 );
@@ -29,6 +41,7 @@ CREATE TABLE "task" (
     "updated_at" TIMESTAMPTZ,
     "project_id" INTEGER NOT NULL,
     "section_id" INTEGER,
+    "user_id" INTEGER NOT NULL,
 
     CONSTRAINT "task_pkey" PRIMARY KEY ("id")
 );
@@ -37,7 +50,6 @@ CREATE TABLE "task" (
 CREATE TABLE "subtask" (
     "id" SERIAL NOT NULL,
     "title" VARCHAR(1024) NOT NULL,
-    "content" VARCHAR(8192),
     "priority" INTEGER NOT NULL DEFAULT 0,
     "completed" BOOLEAN NOT NULL DEFAULT false,
     "deleted" BOOLEAN NOT NULL DEFAULT false,
@@ -46,29 +58,9 @@ CREATE TABLE "subtask" (
     "completed_on" TIMESTAMPTZ,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ,
-    "taskId" INTEGER NOT NULL,
-
-    CONSTRAINT "subtask_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "project_activity" (
-    "id" SERIAL NOT NULL,
-    "message" VARCHAR(256) NOT NULL,
-    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "project_id" INTEGER NOT NULL,
-
-    CONSTRAINT "project_activity_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "tag_activity" (
-    "id" SERIAL NOT NULL,
-    "message" VARCHAR(256) NOT NULL,
-    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "task_id" INTEGER NOT NULL,
 
-    CONSTRAINT "tag_activity_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "subtask_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -95,6 +87,9 @@ CREATE TABLE "_TagToTask" (
 );
 
 -- CreateIndex
+CREATE UNIQUE INDEX "user_email_key" ON "user"("email");
+
+-- CreateIndex
 CREATE INDEX "task_content_idx" ON "task"("content");
 
 -- CreateIndex
@@ -104,19 +99,19 @@ CREATE UNIQUE INDEX "_TagToTask_AB_unique" ON "_TagToTask"("A", "B");
 CREATE INDEX "_TagToTask_B_index" ON "_TagToTask"("B");
 
 -- AddForeignKey
+ALTER TABLE "project" ADD CONSTRAINT "project_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "task" ADD CONSTRAINT "task_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "project"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "task" ADD CONSTRAINT "task_section_id_fkey" FOREIGN KEY ("section_id") REFERENCES "section"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "task" ADD CONSTRAINT "task_section_id_fkey" FOREIGN KEY ("section_id") REFERENCES "section"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "subtask" ADD CONSTRAINT "subtask_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "task"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "task" ADD CONSTRAINT "task_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "project_activity" ADD CONSTRAINT "project_activity_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "project"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "tag_activity" ADD CONSTRAINT "tag_activity_task_id_fkey" FOREIGN KEY ("task_id") REFERENCES "task"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "subtask" ADD CONSTRAINT "subtask_task_id_fkey" FOREIGN KEY ("task_id") REFERENCES "task"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "section" ADD CONSTRAINT "section_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "project"("id") ON DELETE CASCADE ON UPDATE CASCADE;
