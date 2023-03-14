@@ -122,7 +122,7 @@ export class AuthenticationService {
     return { accessToken, refreshToken };
   }
 
-  private async signToken<T>(userId: number, expiresIn: string, payload?: T) {
+  private async signToken<T>(userId: number, expiresIn: number, payload?: T) {
     return await this.jwtService.signAsync(
       {
         sub: userId,
@@ -132,7 +132,7 @@ export class AuthenticationService {
         audience: this.jwtConfiguration.audience,
         issuer: this.jwtConfiguration.issuer,
         secret: this.jwtConfiguration.secret,
-        expiresIn: expiresIn,
+        expiresIn,
       },
     );
   }
