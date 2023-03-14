@@ -8,6 +8,7 @@ Install the following:
 
 - [Node.js](https://nodejs.org/en/)
 - [Docker](https://www.docker.com/)
+- [Redis](https://redis.io/docs/getting-started/installation/)
 
 Create a `.env` file at the root of the project. The file should contain:
 
