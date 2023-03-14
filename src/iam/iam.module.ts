@@ -4,6 +4,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { RedisModule } from '../redis/redis.module';
 import { UsersModule } from '../users/users.module';
+import { UsersService } from '../users/users.service';
 import { AuthenticationController } from './authentication/authentication.controller';
 import { AuthenticationService } from './authentication/authentication.service';
 import { AccessTokenGuard, AuthenticationGuard } from './authentication/guards';
@@ -31,6 +32,7 @@ import { HashingService } from './hashing/hashing.service';
     AuthenticationService,
     AccessTokenGuard,
     RefreshTokenIdsStorage,
+    UsersService,
   ],
   controllers: [AuthenticationController],
   exports: [AuthenticationService],
