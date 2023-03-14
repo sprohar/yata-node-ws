@@ -30,5 +30,5 @@ export class CreateProjectDto {
   @ApiProperty()
   @IsOptional()
   @IsString()
-  ownerId?: string;
+  userId: number;
 }
