@@ -15,7 +15,6 @@ import {
 import { ApiTags } from '@nestjs/swagger/dist';
 import { Prisma } from '@prisma/client';
 import { QueryParams } from '../dto/query-params.dto';
-import { TasksService } from '../tasks/tasks.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { ProjectsQueryParams } from './dto/projects-query-params.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
@@ -24,10 +23,7 @@ import { ProjectsService } from './projects.service';
 @ApiTags('Projects')
 @Controller('projects')
 export class ProjectsController {
-  constructor(
-    private readonly projectsService: ProjectsService,
-    private readonly tasksService: TasksService,
-  ) {}
+  constructor(private readonly projectsService: ProjectsService) {}
 
   @Post()
   async create(@Body() createProjectDto: CreateProjectDto) {
