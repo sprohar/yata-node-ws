@@ -1,11 +1,14 @@
 import { PrismaClient, Section } from '@prisma/client';
+import { ArgonService } from '../src/iam/hashing/argon.service';
 const prisma = new PrismaClient();
+const argon = new ArgonService();
 
 const main = async () => {
+  const pwd = await argon.hash('password');
   const user = await prisma.user.create({
     data: {
       email: 'daniel@sprohar.dev',
-      pwd: 'password@123',
+      pwd,
     },
   });
 
