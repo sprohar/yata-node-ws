@@ -5,13 +5,17 @@ import {
   HttpStatus,
   Post,
   Res,
+  Req,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { Request } from 'express';
 import { Response } from 'express';
 import { AuthenticationService } from './authentication.service';
 import { Auth } from './decorators';
-import { RefreshTokenDto, SignInDto, SignUpDto } from './dto';
+import { SignInDto, SignUpDto } from './dto';
 import { AuthType } from './enums';
+import { COOKIE_REFRESH_TOKEN_KEY } from '../iam.constants';
 
 @ApiTags('Authentication')
 @Auth(AuthType.NONE)
@@ -21,8 +25,13 @@ export class AuthenticationController {
 
   @Post('refresh-tokens')
   @HttpCode(HttpStatus.OK)
-  refreshTokens(@Body() dto: RefreshTokenDto) {
-    return this.authService.refreshTokens(dto);
+  refreshTokens(@Req() request: Request) {
+    if (!request.cookies) {
+      throw new UnauthorizedException();
+    }
+
+    const refreshToken = request.cookies[COOKIE_REFRESH_TOKEN_KEY];
+    return this.authService.refreshTokens(refreshToken);
   }
 
   @Post('sign-up')
@@ -37,7 +46,7 @@ export class AuthenticationController {
     @Body() dto: SignInDto,
   ) {
     const { accessToken, refreshToken } = await this.authService.signIn(dto);
-    res.cookie('t', refreshToken, {
+    res.cookie(COOKIE_REFRESH_TOKEN_KEY, refreshToken, {
       httpOnly: true,
       sameSite: 'lax',
     });

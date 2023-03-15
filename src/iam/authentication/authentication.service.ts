@@ -7,14 +7,14 @@ import {
 import { ConfigType } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { randomUUID } from 'crypto';
 import { PrismaClientErrorCode } from '../../prisma/enums/prisma-client-error-code.enum';
 import { UsersService } from '../../users/users.service';
 import { ActiveUserData } from '../active-user-data';
 import jwtConfig from '../config/jwt.config';
 import { HashingService } from '../hashing/hashing.service';
-import { RefreshTokenDto, SignInDto, SignUpDto } from './dto';
+import { SignInDto, SignUpDto } from './dto';
 import { InvalidatedRefreshTokenError } from './errors';
 import { RefreshTokenPayload } from './interfaces';
 import { RefreshTokenIdsStorage } from './refresh-token-ids.storage';
@@ -30,17 +30,14 @@ export class AuthenticationService {
     private readonly jwtConfiguration: ConfigType<typeof jwtConfig>,
   ) {}
 
-  async refreshTokens(dto: RefreshTokenDto) {
+  async refreshTokens(refreshToken: string) {
     try {
       const tokenPayload =
-        await this.jwtService.verifyAsync<RefreshTokenPayload>(
-          dto.refreshToken,
-          {
-            secret: this.jwtConfiguration.secret,
-            audience: this.jwtConfiguration.audience,
-            issuer: this.jwtConfiguration.issuer,
-          },
-        );
+        await this.jwtService.verifyAsync<RefreshTokenPayload>(refreshToken, {
+          secret: this.jwtConfiguration.secret,
+          audience: this.jwtConfiguration.audience,
+          issuer: this.jwtConfiguration.issuer,
+        });
 
       const user = await this.usersService.findOne({
         id: parseInt(tokenPayload.sub),
