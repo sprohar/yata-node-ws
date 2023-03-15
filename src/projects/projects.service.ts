@@ -47,26 +47,14 @@ export class ProjectsService {
     };
   }
 
-  async findOne(id: number): Promise<Project> {
-    return this.prisma.project.findFirst({
-      where: {
-        id,
-      },
-      include: {
-        sections: true,
-        tasks: true,
-      },
-    });
+  async findOne(args: Prisma.ProjectFindFirstArgs): Promise<Project> {
+    return this.prisma.project.findFirst(args);
   }
 
   async update(
     id: number,
     updateProjectDto: UpdateProjectDto,
   ): Promise<Project> {
-    if (!(await this.exists(id))) {
-      return null;
-    }
-
     return this.prisma.project.update({
       where: {
         id,
@@ -79,22 +67,13 @@ export class ProjectsService {
   }
 
   async remove(id: number): Promise<Project> {
-    if (!(await this.exists(id))) {
-      return null;
-    }
-
     return this.prisma.project.delete({
       where: { id },
     });
   }
 
-  async exists(id: number): Promise<boolean> {
-    const count = await this.prisma.project.count({
-      where: {
-        id,
-      },
-    });
-
+  async exists(args: Prisma.ProjectCountArgs): Promise<boolean> {
+    const count = await this.prisma.project.count(args);
     return count > 0;
   }
 }

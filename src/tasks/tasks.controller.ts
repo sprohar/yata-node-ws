@@ -36,7 +36,12 @@ export class TasksController {
     @Param('projectId', ParseIntPipe) projectId: number,
     @Body() createTaskDto: CreateTaskDto,
   ) {
-    const projectExists = await this.projectsService.exists(projectId);
+    const projectExists = await this.projectsService.exists({
+      where: {
+        id: projectId,
+      }
+    });
+
     if (!projectExists) {
       throw new BadRequestException('Project does not exist.');
     }
@@ -106,7 +111,12 @@ export class TasksController {
     @Param('projectId', ParseIntPipe) projectId: number,
     @Param('id', ParseIntPipe) taskId: number,
   ) {
-    const projectExists = await this.projectsService.exists(projectId);
+    const projectExists = await this.projectsService.exists({
+      where: {
+        id: projectId,
+      }
+    });
+
     if (!projectExists) {
       throw new BadRequestException();
     }
@@ -129,7 +139,12 @@ export class TasksController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateTaskDto: UpdateTaskDto,
   ) {
-    const projectExists = await this.projectsService.exists(projectId);
+    const projectExists = await this.projectsService.exists({
+      where: {
+        id: projectId,
+      }
+    });
+
     if (!projectExists) {
       throw new BadRequestException();
     }
@@ -156,7 +171,12 @@ export class TasksController {
     @Param('projectId', ParseIntPipe) projectId: number,
     @Param('id', ParseIntPipe) id: number,
   ) {
-    const projectExists = await this.projectsService.exists(projectId);
+    const projectExists = await this.projectsService.exists({
+      where: {
+        id: projectId,
+      }
+    });
+    
     if (!projectExists) {
       throw new BadRequestException();
     }
