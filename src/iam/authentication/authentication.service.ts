@@ -15,6 +15,7 @@ import { ActiveUserData } from '../active-user-data';
 import jwtConfig from '../config/jwt.config';
 import { HashingService } from '../hashing/hashing.service';
 import { SignInDto, SignUpDto } from './dto';
+import { AuthResponseDto } from './dto/auth-response.dto';
 import { InvalidatedRefreshTokenError } from './errors';
 import { RefreshTokenPayload } from './interfaces';
 import { RefreshTokenIdsStorage } from './refresh-token-ids.storage';
@@ -67,7 +68,12 @@ export class AuthenticationService {
         pwd: await this.hashingService.hash(signUpDto.password),
       });
 
-      return user;
+     const { accessToken, refreshToken } = await this.generateTokens(user as User);
+      return {
+        accessToken,
+        refreshToken,
+        user,
+      }
     } catch (err) {
       if (err instanceof PrismaClientKnownRequestError) {
         if (err.code === PrismaClientErrorCode.UNIQUE_CONSTRAINT_VIOLATION) {
@@ -97,7 +103,12 @@ export class AuthenticationService {
     }
 
     // create tokens in parallel
-    return await this.generateTokens(user);
+    const { accessToken, refreshToken } = await this.generateTokens(user);
+    return {
+      accessToken,
+      refreshToken,
+      user,
+    }
   }
 
   async generateTokens(user: User) {
