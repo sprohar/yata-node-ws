@@ -10,13 +10,13 @@ import {
   ParseIntPipe,
   Patch,
   Post,
-  Query
+  Query,
 } from '@nestjs/common';
 import { BadRequestException } from '@nestjs/common/exceptions';
 import { ApiTags } from '@nestjs/swagger/dist/decorators';
 import { Prisma } from '@prisma/client';
-import { ActiveUser } from 'src/iam/decorators/active-user.decorator';
 import { QueryParams } from '../dto/query-params.dto';
+import { ActiveUser } from '../iam/decorators/active-user.decorator';
 import { ProjectsService } from '../projects/projects.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { TasksQueryParams } from './dto/tasks-query-params.dto';
@@ -173,7 +173,7 @@ export class TasksController {
     });
 
     if (!taskExists) {
-      throw new BadRequestException();
+      throw new NotFoundException();
     }
 
     if (updateTaskDto.completed) {
@@ -213,7 +213,7 @@ export class TasksController {
     });
 
     if (!taskExists) {
-      throw new BadRequestException();
+      throw new NotFoundException();
     }
 
     try {

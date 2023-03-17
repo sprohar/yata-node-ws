@@ -1,7 +1,9 @@
 import { HttpStatus, INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { Project, User } from '@prisma/client';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
+import { SignUpDto } from '../src/iam/authentication/dto';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { CreateTaskDto } from '../src/tasks/dto/create-task.dto';
 import { UpdateTaskDto } from '../src/tasks/dto/update-task.dto';
@@ -16,9 +18,15 @@ const resourcePathFrom = (projectId: number, taskId?: number) => {
   return path;
 };
 
+function attachAccessToken(req: request.Test, accessToken: string) {
+  return req.set('Authorization', `Bearer ${accessToken}`);
+}
+
 describe('TasksController', () => {
   let app: INestApplication;
-  let projectId: number;
+  let user: User;
+  let project: Project;
+  let accessToken: string;
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -36,63 +44,90 @@ describe('TasksController', () => {
   });
 
   beforeEach(async () => {
-    const res = await request(app.getHttpServer())
-      .post('/projects')
-      .send({ name: 'Test Project' });
+    const signUpDto: SignUpDto = {
+      email: 'tester@example.io',
+      password: 'password',
+    };
 
-    projectId = parseInt(res.body.id);
+    const res = await request(app.getHttpServer())
+      .post('/authentication/sign-up')
+      .send(signUpDto);
+
+    accessToken = res.body.accessToken;
+    user = res.body.user;
+
+    project = await app.get(PrismaService).project.create({
+      data: {
+        name: 'Project',
+        userId: user.id,
+      },
+    });
   });
 
   afterEach(async () => {
     const prisma = app.get(PrismaService);
-    await prisma.project.deleteMany();
+    await prisma.user.deleteMany();
   });
 
   describe('POST Create task', () => {
     describe('Validation', () => {
       it('should return 400 when given an invalid priority value', async () => {
-        const res = await request(app.getHttpServer())
-          .post(resourcePathFrom(projectId))
+        const req = request(app.getHttpServer())
+          .post(resourcePathFrom(project.id))
           .send({
             name: 'Task',
-            projectId: projectId,
-            priority: '0',
+            projectId: project.id,
+            priority: 'Invalid Priority Value',
           });
+
+        const res = await attachAccessToken(req, accessToken);
+
         expect(res.status).toEqual(HttpStatus.BAD_REQUEST);
       });
 
       it('should return 400 when given an invalid date', async () => {
         const createTaskDto: CreateTaskDto = {
           title: 'Task',
-          projectId,
+          projectId: project.id,
           dueDate: '10-10-2010',
         };
-        const res = await request(app.getHttpServer())
-          .post(resourcePathFrom(projectId))
+
+        const req = request(app.getHttpServer())
+          .post(resourcePathFrom(project.id))
           .send(createTaskDto);
+
+        const res = await attachAccessToken(req, accessToken);
+
         expect(res.status).toEqual(HttpStatus.BAD_REQUEST);
       });
 
       it('should return 400 when given the Title is too long', async () => {
         const createTaskDto: CreateTaskDto = {
           title: ' '.repeat(Task.Title.MAX_LENGTH + 1),
-          projectId,
+          projectId: project.id,
         };
-        const res = await request(app.getHttpServer())
-          .post(resourcePathFrom(projectId))
+
+        const req = request(app.getHttpServer())
+          .post(resourcePathFrom(project.id))
           .send(createTaskDto);
+
+        const res = await attachAccessToken(req, accessToken);
+
         expect(res.status).toEqual(HttpStatus.BAD_REQUEST);
       });
 
       it('should return 400 when given the Content is too long', async () => {
         const createTaskDto: CreateTaskDto = {
           title: 'Task',
-          projectId,
+          projectId: project.id,
           content: ' '.repeat(Task.Content.MAX_LENGTH + 1),
         };
-        const res = await request(app.getHttpServer())
-          .post(resourcePathFrom(projectId))
+        const req = request(app.getHttpServer())
+          .post(resourcePathFrom(project.id))
           .send(createTaskDto);
+
+        const res = await attachAccessToken(req, accessToken);
+
         expect(res.status).toEqual(HttpStatus.BAD_REQUEST);
       });
     });
@@ -103,9 +138,11 @@ describe('TasksController', () => {
         projectId: 0,
       };
 
-      const res = await request(app.getHttpServer())
+      const req = request(app.getHttpServer())
         .post(resourcePathFrom(createTaskDto.projectId))
         .send(createTaskDto);
+
+      const res = await attachAccessToken(req, accessToken);
 
       expect(res.status).toEqual(HttpStatus.BAD_REQUEST);
     });
@@ -113,12 +150,14 @@ describe('TasksController', () => {
     it('should create a new Task', async () => {
       const createTaskDto: CreateTaskDto = {
         title: 'Task',
-        projectId,
+        projectId: project.id,
       };
 
-      const res = await request(app.getHttpServer())
-        .post(resourcePathFrom(projectId))
+      const req = request(app.getHttpServer())
+        .post(resourcePathFrom(project.id))
         .send(createTaskDto);
+
+      const res = await attachAccessToken(req, accessToken);
 
       expect(res.status).toEqual(HttpStatus.CREATED);
     });
@@ -130,29 +169,35 @@ describe('TasksController', () => {
     beforeEach(async () => {
       const createTaskDto: CreateTaskDto = {
         title: 'Mock Task',
-        projectId,
+        projectId: project.id,
       };
 
-      const res = await request(app.getHttpServer())
-        .post(resourcePathFrom(projectId))
+      const req = request(app.getHttpServer())
+        .post(resourcePathFrom(project.id))
         .send(createTaskDto);
+
+      const res = await attachAccessToken(req, accessToken);
 
       taskId = parseInt(res.body.id);
     });
 
     it('should return 404 when a task does not exist', async () => {
       const taskId = 0;
-      const res = await request(app.getHttpServer()).get(
-        resourcePathFrom(projectId, taskId),
+      const req = request(app.getHttpServer()).get(
+        resourcePathFrom(project.id, taskId),
       );
+
+      const res = await attachAccessToken(req, accessToken);
 
       expect(res.status).toEqual(HttpStatus.NOT_FOUND);
     });
 
     it('should return a Task', async () => {
-      const res = await request(app.getHttpServer()).get(
-        resourcePathFrom(projectId, taskId),
+      const req = request(app.getHttpServer()).get(
+        resourcePathFrom(project.id, taskId),
       );
+
+      const res = await attachAccessToken(req, accessToken);
 
       expect(res.status).toEqual(HttpStatus.OK);
       expect(res.body).toBeDefined();
@@ -165,30 +210,34 @@ describe('TasksController', () => {
     beforeEach(async () => {
       const createTaskDto: CreateTaskDto = {
         title: 'Mock Task',
-        projectId,
+        projectId: project.id,
       };
 
-      const res = await request(app.getHttpServer())
-        .post(resourcePathFrom(projectId))
+      const req = request(app.getHttpServer())
+        .post(resourcePathFrom(project.id))
         .send(createTaskDto);
 
-      taskId = Number.parseInt(res.body.id, 10);
+      const res = await attachAccessToken(req, accessToken);
+
+      taskId = parseInt(res.body.id);
     });
 
     it('should return 404 when a task does not exist', async () => {
       const taskId = 0;
-      const res = await request(app.getHttpServer()).delete(
-        resourcePathFrom(projectId, taskId),
+      const req = request(app.getHttpServer()).delete(
+        resourcePathFrom(project.id, taskId),
       );
 
+      const res = await attachAccessToken(req, accessToken);
       expect(res.status).toEqual(HttpStatus.NOT_FOUND);
     });
 
     it('should delete a Task', async () => {
-      const res = await request(app.getHttpServer()).delete(
-        resourcePathFrom(projectId, taskId),
+      const req = request(app.getHttpServer()).delete(
+        resourcePathFrom(project.id, taskId),
       );
 
+      const res = await attachAccessToken(req, accessToken);
       expect(res.status).toEqual(HttpStatus.NO_CONTENT);
     });
   });
@@ -199,30 +248,37 @@ describe('TasksController', () => {
     beforeEach(async () => {
       const createTaskDto: CreateTaskDto = {
         title: 'Mock Task',
-        projectId,
+        projectId: project.id,
       };
 
-      const res = await request(app.getHttpServer())
-        .post(resourcePathFrom(projectId))
-        .send(createTaskDto);
+      const task = await app.get(PrismaService).task.create({
+        data: {
+          ...createTaskDto,
+          userId: user.id,
+        },
+      });
 
-      taskId = parseInt(res.body.id);
+      taskId = task.id;
     });
 
     it('should return 404 when a task does not exist', async () => {
       const taskId = 0;
-      const res = await request(app.getHttpServer()).patch(
-        resourcePathFrom(projectId, taskId),
+      const req = request(app.getHttpServer()).patch(
+        resourcePathFrom(project.id, taskId),
       );
+
+      const res = await attachAccessToken(req, accessToken);
 
       expect(res.status).toEqual(HttpStatus.NOT_FOUND);
     });
 
     it('should update a Task', async () => {
       const updateTaskDto: UpdateTaskDto = { title: 'Updated via PATCH' };
-      const res = await request(app.getHttpServer())
-        .patch(resourcePathFrom(projectId, taskId))
+      const req = request(app.getHttpServer())
+        .patch(resourcePathFrom(project.id, taskId))
         .send(updateTaskDto);
+
+      const res = await attachAccessToken(req, accessToken);
 
       expect(res.status).toEqual(HttpStatus.OK);
       expect(res.body).toBeDefined();
