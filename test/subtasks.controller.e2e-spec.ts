@@ -1,11 +1,17 @@
 import { HttpStatus, INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { User } from '@prisma/client';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
+import { SignUpDto } from '../src/iam/authentication/dto';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { CreateSubtaskDto } from '../src/subtasks/dto/create-subtask.dto';
 import { UpdateSubtaskDto } from '../src/subtasks/dto/update-subtask.dto';
 import { CreateTaskDto } from '../src/tasks/dto/create-task.dto';
+
+function attachAccessToken(req: request.Test, accessToken: string) {
+  return req.set('Authorization', `Bearer ${accessToken}`);
+}
 
 describe('SubtasksController', () => {
   let app: INestApplication;
@@ -13,6 +19,8 @@ describe('SubtasksController', () => {
   let projectId: number;
   let taskId: number;
   let subtaskId: number;
+  let user: User;
+  let accessToken: string;
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -31,12 +39,26 @@ describe('SubtasksController', () => {
   });
 
   beforeEach(async () => {
+    const signUpDto: SignUpDto = {
+      email: 'tester@example.io',
+      password: 'password',
+    };
+
+    const res = await request(app.getHttpServer())
+      .post('/authentication/sign-up')
+      .send(signUpDto);
+
+    accessToken = res.body.accessToken;
+    user = res.body.user;
+
     prismaService = app.get(PrismaService);
     const project = await prismaService.project.create({
       data: {
         name: 'Project 1',
+        userId: user.id,
       },
     });
+
     projectId = project.id;
 
     const task = await prismaService.task.create({
@@ -46,6 +68,7 @@ describe('SubtasksController', () => {
       data: {
         title: 'Task 1',
         projectId: project.id,
+        userId: user.id,
         subtasks: {
           create: [
             {
@@ -75,7 +98,7 @@ describe('SubtasksController', () => {
 
   afterEach(async () => {
     const prisma = app.get(PrismaService);
-    await prisma.project.deleteMany();
+    await prisma.user.deleteMany();
   });
 
   describe('[GET] Get Subtasks', () => {
@@ -87,10 +110,11 @@ describe('SubtasksController', () => {
         title: 'Task',
       };
 
-      const res = await request(app.getHttpServer())
+      const req = request(app.getHttpServer())
         .post(`/tasks`)
         .send(createTaskDto);
 
+      const res = await attachAccessToken(req, accessToken);
       taskId = res.body.id;
 
       const createSubtaskDto: CreateSubtaskDto = {
@@ -98,15 +122,17 @@ describe('SubtasksController', () => {
         taskId,
       };
 
-      await request(app.getHttpServer())
+      const subtaskReq = request(app.getHttpServer())
         .post(`/tasks/${taskId}/subtasks`)
         .send(createSubtaskDto);
+
+      await attachAccessToken(subtaskReq, accessToken);
     });
 
     it('should return a paginated list of subtasks', async () => {
-      const res = await request(app.getHttpServer()).get(
-        `/tasks/${taskId}/subtasks`,
-      );
+      const req = request(app.getHttpServer()).get(`/tasks/${taskId}/subtasks`);
+
+      const res = await attachAccessToken(req, accessToken);
 
       expect(res.body).toBeDefined();
     });
@@ -119,9 +145,11 @@ describe('SubtasksController', () => {
         taskId: 0,
       };
 
-      const res = await request(app.getHttpServer())
+      const req = request(app.getHttpServer())
         .post(`/tasks/${taskId}/subtasks`)
         .send(createSubtaskDto);
+
+      const res = await attachAccessToken(req, accessToken);
 
       expect(res.status).toEqual(HttpStatus.BAD_REQUEST);
     });
@@ -132,9 +160,11 @@ describe('SubtasksController', () => {
         taskId: taskId,
       };
 
-      const res = await request(app.getHttpServer())
+      const req = request(app.getHttpServer())
         .post(`/tasks/${taskId}/subtasks`)
         .send(createSubtaskDto);
+
+      const res = await attachAccessToken(req, accessToken);
 
       expect(res.status).toEqual(HttpStatus.CREATED);
     });
@@ -142,17 +172,21 @@ describe('SubtasksController', () => {
 
   describe('[GET] Get Subtask by Id', () => {
     it('should return 404 Not Found', async () => {
-      const res = await request(app.getHttpServer()).get(
+      const req = request(app.getHttpServer()).get(
         `/tasks${taskId}/subtasks/${subtaskId}`,
       );
+
+      const res = await attachAccessToken(req, accessToken);
 
       expect(res.status).toEqual(HttpStatus.NOT_FOUND);
     });
 
     it('should return a Subtask', async () => {
-      const res = await request(app.getHttpServer()).get(
+      const req = request(app.getHttpServer()).get(
         `/tasks/${taskId}/subtasks/${subtaskId}`,
       );
+
+      const res = await attachAccessToken(req, accessToken);
 
       expect(res.body).toBeDefined();
       expect(res.status).toEqual(HttpStatus.OK);
@@ -166,9 +200,11 @@ describe('SubtasksController', () => {
         taskId,
       };
 
-      const res = await request(app.getHttpServer())
+      const req = request(app.getHttpServer())
         .patch(`/tasks/${taskId}/subtasks/0`)
         .send(updateSubtaskDto);
+
+      const res = await attachAccessToken(req, accessToken);
 
       expect(res.status).toEqual(HttpStatus.NOT_FOUND);
     });
@@ -179,9 +215,11 @@ describe('SubtasksController', () => {
         taskId,
       };
 
-      const res = await request(app.getHttpServer())
+      const req = request(app.getHttpServer())
         .patch(`/tasks/${taskId}/subtasks/${subtaskId}`)
         .send(updateSubtaskDto);
+
+      const res = await attachAccessToken(req, accessToken);
 
       expect(res.status).toEqual(HttpStatus.OK);
     });
@@ -189,17 +227,21 @@ describe('SubtasksController', () => {
 
   describe('DELETE /subtasks/:id', () => {
     it('should return 404 Not Found', async () => {
-      const res = await request(app.getHttpServer()).delete(
+      const req = request(app.getHttpServer()).delete(
         `/tasks${taskId}/subtasks/0`,
       );
+
+      const res = await attachAccessToken(req, accessToken);
 
       expect(res.status).toEqual(HttpStatus.NOT_FOUND);
     });
 
     it('should return 204 No Content when a Subtask was deleted', async () => {
-      const res = await request(app.getHttpServer()).delete(
+      const req = request(app.getHttpServer()).delete(
         `/tasks/${taskId}/subtasks/${subtaskId}`,
       );
+
+      const res = await attachAccessToken(req, accessToken);
 
       expect(res.status).toEqual(HttpStatus.NO_CONTENT);
     });

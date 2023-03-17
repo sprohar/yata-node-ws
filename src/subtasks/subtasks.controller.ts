@@ -18,6 +18,7 @@ import { ParseIntPipe } from '@nestjs/common/pipes';
 import { ApiTags } from '@nestjs/swagger';
 import { Prisma } from '@prisma/client';
 import { QueryParams } from '../dto/query-params.dto';
+import { ActiveUser } from '../iam/decorators/active-user.decorator';
 import { TasksQueryParams } from '../tasks/dto/tasks-query-params.dto';
 import { Task } from '../tasks/entities/task.entity';
 import { TasksService } from '../tasks/tasks.service';
@@ -35,10 +36,17 @@ export class SubtasksController {
 
   @Post()
   async create(
+    @ActiveUser('sub', ParseIntPipe) userId: number,
     @Param('taskId', ParseIntPipe) taskId: number,
     @Body() createSubtaskDto: CreateSubtaskDto,
   ) {
-    const taskExists = await this.tasksService.exists(taskId);
+    const taskExists = await this.tasksService.exists({
+      where: {
+        id: taskId,
+        userId,
+      },
+    });
+
     if (!taskExists) {
       throw new BadRequestException();
     }
@@ -46,7 +54,6 @@ export class SubtasksController {
     try {
       return await this.subtasksService.create(createSubtaskDto);
     } catch (error) {
-      console.log(createSubtaskDto);
       console.error(error);
       throw new BadRequestException();
     }
@@ -93,11 +100,18 @@ export class SubtasksController {
 
   @Patch(':id')
   async update(
+    @ActiveUser('sub', ParseIntPipe) userId: number,
     @Param('taskId', ParseIntPipe) taskId: number,
     @Param('id', ParseIntPipe) id: number,
     @Body() updateSubtaskDto: UpdateSubtaskDto,
   ) {
-    const taskExists = await this.tasksService.exists(taskId);
+    const taskExists = await this.tasksService.exists({
+      where: {
+        id: taskId,
+        userId,
+      },
+    });
+
     if (!taskExists) {
       throw new BadRequestException();
     }
