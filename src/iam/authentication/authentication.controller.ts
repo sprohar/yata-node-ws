@@ -16,6 +16,7 @@ import { Auth } from './decorators';
 import { SignInDto, SignUpDto } from './dto';
 import { AuthType } from './enums';
 import { COOKIE_REFRESH_TOKEN_KEY } from '../iam.constants';
+import { AuthResponseDto } from './dto/auth-response.dto';
 
 @ApiTags('Authentication')
 @Auth(AuthType.NONE)
@@ -35,8 +36,21 @@ export class AuthenticationController {
   }
 
   @Post('sign-up')
-  signUp(@Body() dto: SignUpDto) {
-    return this.authService.signUp(dto);
+  async signUp(
+    @Res({ passthrough: true }) res: Response,
+    @Body() dto: SignUpDto,
+  ) {
+    const { accessToken, refreshToken, user } = await this.authService.signUp(
+      dto,
+    );
+
+    res.cookie(COOKIE_REFRESH_TOKEN_KEY, refreshToken, {
+      httpOnly: true,
+      sameSite: 'lax',
+    });
+
+    const authResponseDto: AuthResponseDto = { accessToken, user };
+    return authResponseDto;
   }
 
   @Post('sign-in')
@@ -45,14 +59,16 @@ export class AuthenticationController {
     @Res({ passthrough: true }) res: Response,
     @Body() dto: SignInDto,
   ) {
-    const { accessToken, refreshToken } = await this.authService.signIn(dto);
+    const { accessToken, refreshToken, user } = await this.authService.signIn(
+      dto,
+    );
+
     res.cookie(COOKIE_REFRESH_TOKEN_KEY, refreshToken, {
       httpOnly: true,
       sameSite: 'lax',
     });
 
-    return {
-      accessToken,
-    };
+    const authResponseDto: AuthResponseDto = { accessToken, user };
+    return authResponseDto;
   }
 }
