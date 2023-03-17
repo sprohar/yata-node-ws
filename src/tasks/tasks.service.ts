@@ -3,20 +3,13 @@ import { Prisma, Task } from '@prisma/client';
 import { QueryParams } from '../dto/query-params.dto';
 import { PaginatedList } from '../interfaces/paginated-list.interface';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateTaskDto } from './dto/create-task.dto';
-import { UpdateTaskDto } from './dto/update-task.dto';
 
 @Injectable()
 export class TasksService {
   constructor(private prisma: PrismaService) {}
 
-  async create(createTaskDto: CreateTaskDto): Promise<Task> {
-    return await this.prisma.task.create({
-      data: createTaskDto,
-      include: {
-        subtasks: true,
-      },
-    });
+  async create(args: Prisma.TaskCreateArgs): Promise<Task> {
+    return await this.prisma.task.create(args);
   }
 
   async duplicate(taskId: number) {
@@ -87,41 +80,20 @@ export class TasksService {
     };
   }
 
-  async findOne(params: { where: Prisma.TaskWhereInput }): Promise<Task> {
-    const { where } = params;
-    return await this.prisma.task.findFirst({
-      where,
-      include: {
-        subtasks: true,
-      },
-    });
+  async findOne(args: Prisma.TaskFindFirstArgs): Promise<Task> {
+    return await this.prisma.task.findFirst(args);
   }
 
-  async update(id: number, updateTaskDto: UpdateTaskDto): Promise<Task> {
-    return await this.prisma.task.update({
-      where: {
-        id,
-      },
-      data: updateTaskDto,
-      include: {
-        subtasks: true,
-      },
-    });
+  async update(args: Prisma.TaskUpdateArgs): Promise<Task> {
+    return await this.prisma.task.update(args);
   }
 
-  /**
-   * @see https://www.prisma.io/docs/reference/api-reference/prisma-client-reference#delete
-   * @param where
-   * @returns The Task that was deleted or `null` if the record was not found.
-   */
-  async remove(id: number): Promise<Task> {
-    return await this.prisma.task.delete({
-      where: { id },
-    });
+  async remove(args: Prisma.TaskDeleteArgs): Promise<Task> {
+    return await this.prisma.task.delete(args);
   }
 
-  async exists(id: number) {
-    const count = await this.prisma.task.count({ where: { id } });
+  async exists(args: Prisma.TaskCountArgs) {
+    const count = await this.prisma.task.count(args);
     return count > 0;
   }
 }

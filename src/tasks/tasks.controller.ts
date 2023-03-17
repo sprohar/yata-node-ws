@@ -10,11 +10,12 @@ import {
   ParseIntPipe,
   Patch,
   Post,
-  Query,
+  Query
 } from '@nestjs/common';
 import { BadRequestException } from '@nestjs/common/exceptions';
 import { ApiTags } from '@nestjs/swagger/dist/decorators';
 import { Prisma } from '@prisma/client';
+import { ActiveUser } from 'src/iam/decorators/active-user.decorator';
 import { QueryParams } from '../dto/query-params.dto';
 import { ProjectsService } from '../projects/projects.service';
 import { CreateTaskDto } from './dto/create-task.dto';
@@ -33,24 +34,32 @@ export class TasksController {
 
   @Post()
   async create(
+    @ActiveUser('sub', ParseIntPipe) userId: number,
     @Param('projectId', ParseIntPipe) projectId: number,
     @Body() createTaskDto: CreateTaskDto,
   ) {
     const projectExists = await this.projectsService.exists({
       where: {
         id: projectId,
-      }
+        userId,
+      },
     });
 
     if (!projectExists) {
       throw new BadRequestException('Project does not exist.');
     }
 
-    return await this.tasksService.create(createTaskDto);
+    return await this.tasksService.create({
+      data: {
+        ...createTaskDto,
+        userId,
+      },
+    });
   }
 
   @Get()
   async getAll(
+    @ActiveUser('sub', ParseIntPipe) userId: number,
     @Param('projectId', ParseIntPipe) projectId: number,
     @Query() query: TasksQueryParams,
   ) {
@@ -60,6 +69,7 @@ export class TasksController {
 
     let where: Prisma.TaskWhereInput = {
       projectId,
+      userId,
     };
 
     if (query.title) {
@@ -85,43 +95,57 @@ export class TasksController {
       orderBy,
       include: {
         subtasks: true,
-      }
+      },
     });
   }
 
   @Get(':id')
   async findOne(
+    @ActiveUser('sub', ParseIntPipe) userId: number,
     @Param('projectId', ParseIntPipe) projectId: number,
     @Param('id', ParseIntPipe) id: number,
   ) {
-    try {
-      return await this.tasksService.findOne({
-        where: {
-          id,
-          projectId,
-        },
-      });
-    } catch (error) {
+    const task = await this.tasksService.findOne({
+      where: {
+        id,
+        projectId,
+        userId,
+      },
+      include: {
+        subtasks: true,
+      },
+    });
+
+    if (task === null) {
       throw new NotFoundException();
     }
+
+    return task;
   }
 
   @Post(':id/duplicate')
   async duplicate(
+    @ActiveUser('sub', ParseIntPipe) userId: number,
     @Param('projectId', ParseIntPipe) projectId: number,
     @Param('id', ParseIntPipe) taskId: number,
   ) {
     const projectExists = await this.projectsService.exists({
       where: {
         id: projectId,
-      }
+      },
     });
 
     if (!projectExists) {
       throw new BadRequestException();
     }
 
-    const taskExists = await this.tasksService.exists(taskId);
+    const taskExists = await this.tasksService.exists({
+      where: {
+        id: taskId,
+        userId,
+      },
+    });
+
     if (!taskExists) {
       throw new BadRequestException();
     }
@@ -135,17 +159,20 @@ export class TasksController {
 
   @Patch(':id')
   async update(
+    @ActiveUser('sub', ParseIntPipe) userId: number,
     @Param('projectId', ParseIntPipe) projectId: number,
     @Param('id', ParseIntPipe) id: number,
     @Body() updateTaskDto: UpdateTaskDto,
   ) {
-    const projectExists = await this.projectsService.exists({
+    const taskExists = await this.tasksService.exists({
       where: {
-        id: projectId,
-      }
+        id,
+        userId,
+        projectId,
+      },
     });
 
-    if (!projectExists) {
+    if (!taskExists) {
       throw new BadRequestException();
     }
 
@@ -159,7 +186,12 @@ export class TasksController {
     }
 
     try {
-      return await this.tasksService.update(id, updateTaskDto);
+      return await this.tasksService.update({
+        data: updateTaskDto,
+        where: {
+          id,
+        },
+      });
     } catch (error) {
       throw new NotFoundException();
     }
@@ -168,21 +200,28 @@ export class TasksController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(
+    @ActiveUser('sub', ParseIntPipe) userId: number,
     @Param('projectId', ParseIntPipe) projectId: number,
     @Param('id', ParseIntPipe) id: number,
   ) {
-    const projectExists = await this.projectsService.exists({
+    const taskExists = await this.tasksService.exists({
       where: {
-        id: projectId,
-      }
+        id,
+        userId,
+        projectId,
+      },
     });
-    
-    if (!projectExists) {
+
+    if (!taskExists) {
       throw new BadRequestException();
     }
 
     try {
-      return await this.tasksService.remove(id);
+      return await this.tasksService.remove({
+        where: {
+          id,
+        },
+      });
     } catch (error) {
       throw new NotFoundException();
     }
