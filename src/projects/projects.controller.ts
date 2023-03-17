@@ -14,9 +14,8 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger/dist';
 import { Prisma } from '@prisma/client';
-import { ActiveUser } from '../iam/decorators/active-user.decorator';
-import { ActiveUserData } from '../iam/active-user-data';
 import { QueryParams } from '../dto/query-params.dto';
+import { ActiveUser } from '../iam/decorators/active-user.decorator';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { ProjectsQueryParams } from './dto/projects-query-params.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
@@ -28,8 +27,16 @@ export class ProjectsController {
   constructor(private readonly projectsService: ProjectsService) {}
 
   @Post()
-  async create(@Body() createProjectDto: CreateProjectDto) {
-    return await this.projectsService.create(createProjectDto);
+  async create(
+    @ActiveUser('sub', ParseIntPipe) userId: number,
+    @Body() createProjectDto: CreateProjectDto,
+  ) {
+    return await this.projectsService.create({
+      data: {
+        ...createProjectDto,
+        userId,
+      },
+    });
   }
 
   @Get()
