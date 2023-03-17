@@ -26,9 +26,4 @@ export class CreateProjectDto {
   @IsEnum(ProjectView)
   @IsOptional()
   view?: ProjectView;
-
-  @ApiProperty()
-  @IsOptional()
-  @IsString()
-  userId: number;
 }
