@@ -19,11 +19,6 @@ export class CreateTaskDto {
   title: string;
 
   @ApiProperty()
-  @IsNotEmpty()
-  @IsNumber()
-  userId: number;
-
-  @ApiProperty()
   @IsOptional()
   @IsBoolean()
   completed?: boolean;
