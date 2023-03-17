@@ -1,110 +1,113 @@
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
-    id        Int       @id @default(autoincrement())
-    email     String    @unique
-    pwd       String
-    username  String?
-    createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
-    updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  pwd       String
+  username  String?
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz
 
-    // relations
-    projects Project[]
-    tasks    Task[]
+  // relations
+  projects Project[]
+  tasks    Task[]
+  tags     Tag[]
 
-    @@map("user")
+  @@map("user")
 }
 
 model Project {
-    id        Int         @id @default(autoincrement())
-    name      String      @db.VarChar(64)
-    important Boolean     @default(false)
-    view      ProjectView @default(LIST) @map("view")
-    createdAt DateTime    @default(now()) @map("created_at") @db.Timestamptz
-    updatedAt DateTime?   @updatedAt @map("updated_at") @db.Timestamptz
-    // relations
-    tasks     Task[]
-    sections  Section[]
-    User      User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
-    userId    Int         @map("user_id")
+  id        Int         @id @default(autoincrement())
+  name      String      @db.VarChar(64)
+  important Boolean     @default(false)
+  view      ProjectView @default(LIST) @map("view")
+  createdAt DateTime    @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime?   @updatedAt @map("updated_at") @db.Timestamptz
+  // relations
+  tasks     Task[]
+  sections  Section[]
+  User      User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int         @map("user_id")
 
-    @@map("project")
+  @@map("project")
 }
 
 model Task {
-    id          Int       @id @default(autoincrement())
-    title       String    @db.VarChar(1024)
-    content     String?   @db.VarChar(8192)
-    priority    Int       @default(0)
-    completed   Boolean   @default(false)
-    deleted     Boolean   @default(false)
-    allDay      Boolean   @default(true) @map("all_day")
-    dueDate     DateTime? @map("due_date") @db.Timestamptz
-    completedOn DateTime? @map("completed_on") @db.Timestamptz
-    createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz
-    updatedAt   DateTime? @updatedAt @map("updated_at") @db.Timestamptz
-    // relations
-    project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
-    projectId   Int       @map("project_id")
-    section     Section?  @relation(fields: [sectionId], references: [id], onDelete: Cascade)
-    sectionId   Int?      @map("section_id")
-    tags        Tag[]
-    subtasks    Subtask[]
-    User        User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
-    userId      Int       @map("user_id")
+  id          Int       @id @default(autoincrement())
+  title       String    @db.VarChar(1024)
+  content     String?   @db.VarChar(8192)
+  priority    Int       @default(0)
+  completed   Boolean   @default(false)
+  deleted     Boolean   @default(false)
+  allDay      Boolean   @default(true) @map("all_day")
+  dueDate     DateTime? @map("due_date") @db.Timestamptz
+  completedOn DateTime? @map("completed_on") @db.Timestamptz
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime? @updatedAt @map("updated_at") @db.Timestamptz
+  // relations
+  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId   Int       @map("project_id")
+  section     Section?  @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  sectionId   Int?      @map("section_id")
+  tags        Tag[]
+  subtasks    Subtask[]
+  User        User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      Int       @map("user_id")
 
-    @@index([content])
-    @@map("task")
+  @@index([content])
+  @@map("task")
 }
 
 model Subtask {
-    id          Int       @id @default(autoincrement())
-    title       String    @db.VarChar(1024)
-    priority    Int       @default(0)
-    completed   Boolean   @default(false)
-    deleted     Boolean   @default(false)
-    allDay      Boolean   @default(true) @map("all_day")
-    dueDate     DateTime? @map("due_date") @db.Timestamptz
-    completedOn DateTime? @map("completed_on") @db.Timestamptz
-    createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz
-    updatedAt   DateTime? @updatedAt @map("updated_at") @db.Timestamptz
-    // relations
-    task        Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
-    taskId      Int       @map("task_id")
+  id          Int       @id @default(autoincrement())
+  title       String    @db.VarChar(1024)
+  priority    Int       @default(0)
+  completed   Boolean   @default(false)
+  deleted     Boolean   @default(false)
+  allDay      Boolean   @default(true) @map("all_day")
+  dueDate     DateTime? @map("due_date") @db.Timestamptz
+  completedOn DateTime? @map("completed_on") @db.Timestamptz
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime? @updatedAt @map("updated_at") @db.Timestamptz
+  // relations
+  task        Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  taskId      Int       @map("task_id")
 
-    @@map("subtask")
+  @@map("subtask")
 }
 
 model Section {
-    id        Int     @id @default(autoincrement())
-    name      String  @db.VarChar(64)
-    // relations
-    tasks     Task[]
-    project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-    projectId Int     @map("project_id")
+  id        Int     @id @default(autoincrement())
+  name      String  @db.VarChar(64)
+  // relations
+  tasks     Task[]
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId Int     @map("project_id")
 
-    @@map("section")
+  @@map("section")
 }
 
 model Tag {
-    id    Int    @id @default(autoincrement())
-    name  String @db.VarChar(32)
-    // relations
-    tasks Task[]
+  id     Int    @id @default(autoincrement())
+  name   String @db.VarChar(32)
+  // relations
+  tasks  Task[]
+  User   User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId Int    @map("user_id")
 
-    @@map("tag")
+  @@map("tag")
 }
 
 enum ProjectView {
-    LIST
-    KANBAN
+  LIST
+  KANBAN
 
-    @@map("project_view")
+  @@map("project_view")
 }
