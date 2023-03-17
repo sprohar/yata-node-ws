@@ -1,15 +1,21 @@
 import { HttpStatus, INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { SignUpDto } from 'src/iam/authentication/dto';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { CreateSectionDto } from '../src/sections/dto/create-section.dto';
 import { UpdateSectionDto } from '../src/sections/dto/update-section.dto';
 
+function attachAccessToken(req: request.Test, accessToken: string) {
+  return req.set('Authorization', `Bearer ${accessToken}`);
+}
+
 describe('SectionsController (e2e)', () => {
   let app: INestApplication;
-  let prismaService: PrismaService;
+  let prisma: PrismaService;
   let projectId: number;
+  let accessToken: string;
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -27,18 +33,32 @@ describe('SectionsController (e2e)', () => {
   });
 
   beforeEach(async () => {
-    prismaService = app.get(PrismaService);
-    const project = await prismaService.project.create({
+    prisma = app.get(PrismaService);
+
+    const signUpDto: SignUpDto = {
+      email: 'tester@example.io',
+      password: 'password',
+    };
+
+    const res = await request(app.getHttpServer())
+      .post('/authentication/sign-up')
+      .send(signUpDto);
+
+    accessToken = res.body.accessToken;
+
+    const userId = res.body.user.id;
+    const project = await prisma.project.create({
       data: {
         name: 'Test Project',
+        userId,
       },
     });
 
     projectId = project.id;
   });
 
-  afterAll(async () => {
-    await prismaService.project.deleteMany();
+  afterEach(async () => {
+    await prisma.user.deleteMany();
   });
 
   describe('POST /projects/:projectId/sections', () => {
@@ -48,9 +68,11 @@ describe('SectionsController (e2e)', () => {
         projectId: 0,
       };
 
-      const res = await request(app.getHttpServer())
+      const req = request(app.getHttpServer())
         .post(`/projects/${projectId}/sections`)
         .send(createSectionDto);
+
+      const res = await attachAccessToken(req, accessToken);
 
       expect(res.status).toEqual(HttpStatus.BAD_REQUEST);
     });
@@ -61,9 +83,11 @@ describe('SectionsController (e2e)', () => {
         projectId,
       };
 
-      const res = await request(app.getHttpServer())
+      const req = request(app.getHttpServer())
         .post(`/projects/${projectId}/sections`)
         .send(createSectionDto);
+
+      const res = await attachAccessToken(req, accessToken);
 
       expect(res.status).toEqual(HttpStatus.CREATED);
     });
@@ -73,7 +97,7 @@ describe('SectionsController (e2e)', () => {
     let sectionId: number;
 
     beforeEach(async () => {
-      const section = await prismaService.section.create({
+      const section = await prisma.section.create({
         data: {
           name: 'Section',
           projectId,
@@ -84,17 +108,21 @@ describe('SectionsController (e2e)', () => {
     });
 
     it('should return 404 Not Found when the Section does not exist', async () => {
-      const res = await request(app.getHttpServer()).get(
+      const req = request(app.getHttpServer()).get(
         `/projects/${projectId}/sections/0`,
       );
+
+      const res = await attachAccessToken(req, accessToken);
 
       expect(res.status).toEqual(HttpStatus.NOT_FOUND);
     });
 
     it('should return a Section', async () => {
-      const res = await request(app.getHttpServer()).get(
+      const req = request(app.getHttpServer()).get(
         `/projects/${projectId}/sections/${sectionId}`,
       );
+
+      const res = await attachAccessToken(req, accessToken);
 
       expect(res.status).toEqual(HttpStatus.OK);
       expect(res.body).toBeDefined();
@@ -105,7 +133,7 @@ describe('SectionsController (e2e)', () => {
     let sectionId: number;
 
     beforeEach(async () => {
-      const section = await prismaService.section.create({
+      const section = await prisma.section.create({
         data: {
           name: 'Section',
           projectId,
@@ -116,9 +144,11 @@ describe('SectionsController (e2e)', () => {
     });
 
     it('should return a list of sections', async () => {
-      const res = await request(app.getHttpServer()).get(
+      const req = request(app.getHttpServer()).get(
         `/projects/${projectId}/sections`,
       );
+
+      const res = await attachAccessToken(req, accessToken);
 
       expect(res.status).toEqual(HttpStatus.OK);
       expect(res.body).toBeDefined();
@@ -130,7 +160,7 @@ describe('SectionsController (e2e)', () => {
     let sectionId: number;
 
     beforeEach(async () => {
-      const section = await prismaService.section.create({
+      const section = await prisma.section.create({
         data: {
           name: 'Section',
           projectId,
@@ -141,18 +171,20 @@ describe('SectionsController (e2e)', () => {
     });
 
     it('should return 404 Not Found when the Section does not exist', async () => {
-      const res = await request(app.getHttpServer()).delete(
+      const req = request(app.getHttpServer()).delete(
         `/projects/${projectId}/sections/0`,
       );
 
+      const res = await attachAccessToken(req, accessToken);
       expect(res.status).toEqual(HttpStatus.NOT_FOUND);
     });
 
     it('should return a Section', async () => {
-      const res = await request(app.getHttpServer()).delete(
+      const req = request(app.getHttpServer()).delete(
         `/projects/${projectId}/sections/${sectionId}`,
       );
 
+      const res = await attachAccessToken(req, accessToken);
       expect(res.status).toEqual(HttpStatus.NO_CONTENT);
       expect(res.body).toBeDefined();
     });
@@ -162,7 +194,7 @@ describe('SectionsController (e2e)', () => {
     let sectionId: number;
 
     beforeEach(async () => {
-      const section = await prismaService.section.create({
+      const section = await prisma.section.create({
         data: {
           name: 'Section',
           projectId,
@@ -174,19 +206,21 @@ describe('SectionsController (e2e)', () => {
 
     it('should return 404 Not Found when the Section does not exist', async () => {
       const updateSectionDto: UpdateSectionDto = { name: 'Section 2.0' };
-      const res = await request(app.getHttpServer())
+      const req = request(app.getHttpServer())
         .patch(`/projects/${projectId}/sections/0`)
         .send(updateSectionDto);
 
+      const res = await attachAccessToken(req, accessToken);
       expect(res.status).toEqual(HttpStatus.NOT_FOUND);
     });
 
     it('should return a Section', async () => {
       const updateSectionDto: UpdateSectionDto = { name: 'Section 2.0' };
-      const res = await request(app.getHttpServer())
+      const req = request(app.getHttpServer())
         .patch(`/projects/${projectId}/sections/${sectionId}`)
         .send(updateSectionDto);
 
+      const res = await attachAccessToken(req, accessToken);
       expect(res.status).toEqual(HttpStatus.OK);
       expect(res.body).toBeDefined();
     });
