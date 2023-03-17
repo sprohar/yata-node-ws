@@ -3,17 +3,14 @@ import { Prisma, Project } from '@prisma/client';
 import { QueryParams } from '../dto/query-params.dto';
 import { PaginatedList } from '../interfaces/paginated-list.interface';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 
 @Injectable()
 export class ProjectsService {
   constructor(private prisma: PrismaService) {}
 
-  async create(createProjectDto: CreateProjectDto): Promise<Project> {
-    return this.prisma.project.create({
-      data: createProjectDto,
-    });
+  async create(args: Prisma.ProjectCreateArgs): Promise<Project> {
+    return await this.prisma.project.create(args);
   }
 
   async findAll(params: {
