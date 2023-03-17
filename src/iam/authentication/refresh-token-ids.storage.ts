@@ -14,7 +14,7 @@ export class RefreshTokenIdsStorage
 
   onApplicationBootstrap() {}
 
-  onApplicationShutdown(signal?: string) {
+  onApplicationShutdown(_signal?: string) {
     this.redisService.quit();
   }
 
