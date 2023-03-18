@@ -8,8 +8,11 @@ import * as cookieParser from 'cookie-parser';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors({
-    origin: [process.env.JWT_TOKEN_AUDIENCE ?? 'http://localhost:4200'],
     credentials: true,
+    origin: [
+      `http://${process.env.JWT_TOKEN_AUDIENCE}` ?? 'http://localhost:4200',
+      `https://${process.env.JWT_TOKEN_AUDIENCE}`,
+    ],
   });
 
   app.useGlobalPipes(
