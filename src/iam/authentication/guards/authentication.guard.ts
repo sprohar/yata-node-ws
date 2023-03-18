@@ -5,7 +5,6 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { Observable } from 'rxjs';
 import { AUTH_TYPE_KEY } from '../decorators';
 import { AuthType } from '../enums';
 import { AccessTokenGuard } from './access-token.guard';
