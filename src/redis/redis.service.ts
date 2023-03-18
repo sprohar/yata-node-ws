@@ -6,7 +6,7 @@ import { Redis } from 'ioredis';
 export class RedisService extends Redis {
   constructor(config: ConfigService) {
     super({
-      host: config.get('REDIS_HOST'),
+      host: config.get('REDIS_HOST') ?? 'localhost',
       port: parseInt(config.get('REDIS_PORT') ?? '6379'),
     });
   }
