@@ -15,7 +15,6 @@ import { ActiveUserData } from '../active-user-data';
 import jwtConfig from '../config/jwt.config';
 import { HashingService } from '../hashing/hashing.service';
 import { SignInDto, SignUpDto } from './dto';
-import { AuthResponseDto } from './dto/auth-response.dto';
 import { InvalidatedRefreshTokenError } from './errors';
 import { RefreshTokenPayload } from './interfaces';
 import { RefreshTokenIdsStorage } from './refresh-token-ids.storage';
