@@ -14,6 +14,17 @@ Create a `.env` file at the root of the project. The file should contain:
 
 ```Properties
 DATABASE_URL="postgresql://postgres:password_123@localhost:5434/yata?schema=public"
+
+JWT_SECRET=jwtSecret123
+JWT_TOKEN_AUDIENCE=localhost:4200
+JWT_TOKEN_ISSUER=localhost:3000
+JWT_ACCESS_TOKEN_TTL=1200
+JWT_REFRESH_TOKEN_TTL=86400
+
+APP_PORT=3000
+
+REDIS_HOST=localhost
+REDIS_PORT=6379
 ```
 
 Ensure that Docker is running on your machine. Open a terminal at the root of the project and run the following to create the Postgres database:
