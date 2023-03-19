@@ -4,12 +4,11 @@ import {
   HttpCode,
   HttpStatus,
   Post,
-  Req,
   Res,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { RefreshToken } from '../decorators';
 import { COOKIE_REFRESH_TOKEN_KEY } from '../iam.constants';
 import { AuthenticationService } from './authentication.service';
@@ -22,16 +21,31 @@ import { AuthType } from './enums';
 @Auth(AuthType.NONE)
 @Controller('authentication')
 export class AuthenticationController {
-  constructor(private authService: AuthenticationService) {}
+  constructor(private authService: AuthenticationService) { }
+
+  private putRefreshTokenInCookieJar(res: Response, token: string) {
+    res.cookie(COOKIE_REFRESH_TOKEN_KEY, token, {
+      httpOnly: true,
+      sameSite: 'lax',
+    });
+  }
 
   @Post('refresh-tokens')
   @HttpCode(HttpStatus.OK)
-  refreshTokens(@RefreshToken() refreshToken: string, @Req() request: Request) {
+  async refreshTokens(
+    @RefreshToken() refreshToken: string,
+    @Res({ passthrough: true }) res: Response
+  ) {
     if (!refreshToken) {
       throw new UnauthorizedException();
     }
 
-    return this.authService.refreshTokens(refreshToken);
+    const authServiceRes = await this.authService.refreshTokens(refreshToken);
+    this.putRefreshTokenInCookieJar(res, authServiceRes.refreshToken);
+    return {
+      accessToken: authServiceRes.accessToken,
+      user: authServiceRes.user,
+    }
   }
 
   @Post('sign-up')
@@ -44,10 +58,7 @@ export class AuthenticationController {
       dto,
     );
 
-    res.cookie(COOKIE_REFRESH_TOKEN_KEY, refreshToken, {
-      httpOnly: true,
-      sameSite: 'lax',
-    });
+    this.putRefreshTokenInCookieJar(res, refreshToken);
 
     const authResponseDto: AuthResponseDto = { accessToken, user };
     return authResponseDto;
@@ -63,10 +74,7 @@ export class AuthenticationController {
       dto,
     );
 
-    res.cookie(COOKIE_REFRESH_TOKEN_KEY, refreshToken, {
-      httpOnly: true,
-      sameSite: 'lax',
-    });
+    this.putRefreshTokenInCookieJar(res, refreshToken);
 
     const authResponseDto: AuthResponseDto = { accessToken, user };
     return authResponseDto;

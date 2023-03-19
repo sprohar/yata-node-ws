@@ -28,7 +28,7 @@ export class AuthenticationService {
     private refreshTokenIdsStorage: RefreshTokenIdsStorage,
     @Inject(jwtConfig.KEY)
     private readonly jwtConfiguration: ConfigType<typeof jwtConfig>,
-  ) {}
+  ) { }
 
   async refreshTokens(refreshToken: string) {
     try {
@@ -51,7 +51,12 @@ export class AuthenticationService {
       // refresh token rotation -> ensure that this token cannot be used again.
       await this.refreshTokenIdsStorage.invalidate(user.id);
 
-      return this.generateTokens(user);
+      const tokens = await this.generateTokens(user);
+      return {
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+        user,
+      }
     } catch (error) {
       if (error instanceof InvalidatedRefreshTokenError) {
         console.error(error);
@@ -67,7 +72,7 @@ export class AuthenticationService {
         pwd: await this.hashingService.hash(signUpDto.password),
       });
 
-     const { accessToken, refreshToken } = await this.generateTokens(user as User);
+      const { accessToken, refreshToken } = await this.generateTokens(user as User);
       return {
         accessToken,
         refreshToken,
