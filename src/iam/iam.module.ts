@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
-import { RedisModule } from '../redis/redis.module';
+import { RedisService } from '../redis/redis.service';
 import { UsersModule } from '../users/users.module';
 import { UsersService } from '../users/users.service';
 import { AuthenticationController } from './authentication/authentication.controller';
@@ -16,7 +16,6 @@ import { HashingService } from './hashing/hashing.service';
 @Module({
   imports: [
     UsersModule,
-    RedisModule,
     JwtModule.registerAsync(jwtConfig.asProvider()),
     ConfigModule.forFeature(jwtConfig),
   ],
@@ -33,6 +32,7 @@ import { HashingService } from './hashing/hashing.service';
     AccessTokenGuard,
     RefreshTokenIdsStorage,
     UsersService,
+    RedisService
   ],
   controllers: [AuthenticationController],
   exports: [AuthenticationService],

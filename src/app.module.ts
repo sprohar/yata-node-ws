@@ -7,6 +7,7 @@ import { ChronoModule } from './chrono/chrono.module';
 import { IamModule } from './iam/iam.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ProjectsModule } from './projects/projects.module';
+import { RedisModule } from './redis/redis.module';
 import { SectionsModule } from './sections/sections.module';
 import { SubtasksModule } from './subtasks/subtasks.module';
 import { TagsModule } from './tags/tags.module';
@@ -29,6 +30,7 @@ import { UsersModule } from './users/users.module';
     ChronoModule,
     IamModule,
     UsersModule,
+    RedisModule,
   ],
   controllers: [],
   providers: [
