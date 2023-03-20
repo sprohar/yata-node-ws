@@ -27,10 +27,8 @@ export class UsersService {
     return `This action returns all users`;
   }
 
-  async findOne(where: Prisma.UserWhereUniqueInput) {
-    return await this.prisma.user.findUnique({
-      where,
-    });
+  async findOne(args: Prisma.UserFindUniqueArgs) {
+    return await this.prisma.user.findUnique(args);
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {

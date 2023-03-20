@@ -45,7 +45,16 @@ export class AuthenticationService {
         });
 
       const user = await this.usersService.findOne({
-        id: parseInt(tokenPayload.sub),
+        where: {
+          id: parseInt(tokenPayload.sub),
+        },
+        select: {
+          id: true,
+          email: true,
+          username: true,
+          createdAt: true,
+          updatedAt: true,
+        }
       });
 
       await this.refreshTokenIdsStorage.validate(
@@ -95,7 +104,9 @@ export class AuthenticationService {
 
   async signIn(signInDto: SignInDto) {
     const user = await this.usersService.findOne({
-      email: signInDto.email,
+      where: {
+        email: signInDto.email,
+      },
     });
 
     if (!user) {

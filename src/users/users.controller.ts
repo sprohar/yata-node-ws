@@ -31,7 +31,9 @@ export class UsersController {
   async findOne(@Param('id', ParseIntPipe) id: number) {
     try {
       return await this.usersService.findOne({
-        id,
+        where: {
+          id,
+        },
       });
     } catch (error) {
       throw new NotFoundException();
