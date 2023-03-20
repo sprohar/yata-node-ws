@@ -1,5 +1,4 @@
 import {
-  ConflictException,
   Inject,
   Injectable,
   UnauthorizedException,
@@ -95,10 +94,10 @@ export class AuthenticationService {
     } catch (err) {
       if (err instanceof PrismaClientKnownRequestError) {
         if (err.code === PrismaClientErrorCode.UNIQUE_CONSTRAINT_VIOLATION) {
-          throw new ConflictException();
+          throw new UnauthorizedException(); 
         }
-        throw err;
       }
+      throw err;
     }
   }
 
