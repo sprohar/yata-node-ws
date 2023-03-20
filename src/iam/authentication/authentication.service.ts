@@ -30,6 +30,11 @@ export class AuthenticationService {
     private readonly jwtConfiguration: ConfigType<typeof jwtConfig>,
   ) { }
 
+  async logout(userId: number) {
+    await this.refreshTokenIdsStorage.invalidate(userId);
+  }
+
+
   async refreshTokens(refreshToken: string) {
     try {
       const tokenPayload =
