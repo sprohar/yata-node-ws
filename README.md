@@ -27,11 +27,30 @@ REDIS_HOST=localhost
 REDIS_PORT=6379
 ```
 
-Ensure that Docker is running on your machine. Open a terminal at the root of the project and run the following to create the Postgres database:
+### Using Docker
+
+If Docker is your preference, then ensure that Docker is running on your machine. 
+Open a terminal at the root of the project and run the following to create the Postgres database:
 
 ```
 docker compose up dev-db --detach
 ```
+
+### Without Docker
+
+Ensure that you have an instance of Postgres DB running on your machine and run the following commands:
+
+```
+npx prisma db push
+```
+
+```
+npx prisma db seed
+```
+
+This will create and seed the database.
+
+## Run the Application
 
 Once the installation process is complete you can start the server:
 
