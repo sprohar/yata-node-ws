@@ -1,4 +1,5 @@
 import { PrismaClient, Section } from '@prisma/client';
+import { Task } from '../src/tasks/entities/task.entity';
 import { ArgonService } from '../src/iam/hashing/argon.service';
 const prisma = new PrismaClient();
 const argon = new ArgonService();
@@ -32,20 +33,90 @@ const main = async () => {
       {
         title: 'Create controllers',
         projectId: projects.id,
-        sectionId: 1,
+        sectionId: 4,
         userId: user.id,
       },
       {
         title: 'Create services',
         projectId: projects.id,
-        sectionId: 1,
+        sectionId: 4,
         userId: user.id,
       },
       {
         title: 'e2e tests',
         projectId: projects.id,
+        sectionId: 4,
+        userId: user.id,
+      },
+      {
+        title: 'High priority task 3',
+        projectId: projects.id,
+        sectionId: 2,
+        userId: user.id,
+        priority: Task.Priority.HIGH,
+      },
+      {
+        title: 'High priority task 3',
+        projectId: projects.id,
+        sectionId: 2,
+        userId: user.id,
+        priority: Task.Priority.HIGH,
+      },
+      {
+        title: 'High priority task 3',
+        projectId: projects.id,
+        sectionId: 2,
+        userId: user.id,
+        priority: Task.Priority.HIGH,
+      },
+      {
+        title: 'Medium priority task 1',
+        projectId: projects.id,
         sectionId: 1,
         userId: user.id,
+        priority: Task.Priority.MEDIUM,
+      },
+      {
+        title: 'Medium priority task 2',
+        projectId: projects.id,
+        sectionId: 1,
+        userId: user.id,
+        priority: Task.Priority.MEDIUM,
+      },
+      {
+        title: 'Medium priority task 3',
+        projectId: projects.id,
+        sectionId: 1,
+        userId: user.id,
+        priority: Task.Priority.MEDIUM,
+      },
+      {
+        title: 'Low priority task 3',
+        projectId: projects.id,
+        sectionId: 3,
+        userId: user.id,
+        priority: Task.Priority.LOW,
+      },
+      {
+        title: 'Low priority task 3',
+        projectId: projects.id,
+        sectionId: 3,
+        userId: user.id,
+        priority: Task.Priority.LOW,
+      },
+      {
+        title: 'Low priority task 3',
+        projectId: projects.id,
+        sectionId: 3,
+        userId: user.id,
+        priority: Task.Priority.LOW,
+      },
+      {
+        title: 'Low priority task 3',
+        projectId: projects.id,
+        sectionId: 3,
+        userId: user.id,
+        priority: Task.Priority.LOW,
       },
     ],
   });
