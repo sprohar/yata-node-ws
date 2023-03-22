@@ -8,6 +8,10 @@ import { PrismaService } from '../prisma/prisma.service';
 export class TasksService {
   constructor(private prisma: PrismaService) {}
 
+  db() {
+    return this.prisma;
+  }
+
   async create(args: Prisma.TaskCreateArgs): Promise<Task> {
     return await this.prisma.task.create(args);
   }
