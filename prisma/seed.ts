@@ -1,10 +1,35 @@
 import { PrismaClient, Section } from '@prisma/client';
 import { Task } from '../src/tasks/entities/task.entity';
 import { ArgonService } from '../src/iam/hashing/argon.service';
+
 const prisma = new PrismaClient();
 const argon = new ArgonService();
 
-const main = async () => {
+function getDueDates() {
+  const today = new Date();
+  today.setHours(23);
+  today.setMinutes(59);
+  today.setSeconds(59);
+
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
+
+  const dayAfterTomorrow = new Date(tomorrow);
+  dayAfterTomorrow.setDate(tomorrow.getDate() + 1);
+
+  const nextWeek = new Date(today);
+  nextWeek.setDate(nextWeek.getDate() + 7);
+
+  return {
+    dayAfterTomorrow,
+    nextWeek,
+    today,
+    tomorrow,
+  };
+}
+
+async function main() {
+  const { dayAfterTomorrow, nextWeek, today, tomorrow } = getDueDates();
   const pwd = await argon.hash('password');
   const user = await prisma.user.create({
     data: {
@@ -35,18 +60,37 @@ const main = async () => {
         projectId: projects.id,
         sectionId: 4,
         userId: user.id,
+        dueDate: today,
       },
       {
         title: 'Create services',
         projectId: projects.id,
         sectionId: 4,
         userId: user.id,
+        dueDate: today,
       },
       {
         title: 'e2e tests',
         projectId: projects.id,
         sectionId: 4,
         userId: user.id,
+        dueDate: today,
+      },
+      {
+        title: 'High priority task 1',
+        projectId: projects.id,
+        sectionId: 2,
+        userId: user.id,
+        priority: Task.Priority.HIGH,
+        dueDate: today,
+      },
+      {
+        title: 'High priority task 2',
+        projectId: projects.id,
+        sectionId: 2,
+        userId: user.id,
+        priority: Task.Priority.HIGH,
+        dueDate: today,
       },
       {
         title: 'High priority task 3',
@@ -54,20 +98,31 @@ const main = async () => {
         sectionId: 2,
         userId: user.id,
         priority: Task.Priority.HIGH,
+        dueDate: today,
       },
       {
-        title: 'High priority task 3',
+        title: 'High priority task 4',
         projectId: projects.id,
         sectionId: 2,
         userId: user.id,
         priority: Task.Priority.HIGH,
+        dueDate: tomorrow,
       },
       {
-        title: 'High priority task 3',
+        title: 'High priority task 5',
         projectId: projects.id,
         sectionId: 2,
         userId: user.id,
         priority: Task.Priority.HIGH,
+        dueDate: tomorrow,
+      },
+      {
+        title: 'High priority task 6',
+        projectId: projects.id,
+        sectionId: 2,
+        userId: user.id,
+        priority: Task.Priority.HIGH,
+        dueDate: tomorrow,
       },
       {
         title: 'Medium priority task 1',
@@ -75,6 +130,8 @@ const main = async () => {
         sectionId: 1,
         userId: user.id,
         priority: Task.Priority.MEDIUM,
+        dueDate: dayAfterTomorrow,
+        content: 'This can wait until next week',
       },
       {
         title: 'Medium priority task 2',
@@ -82,6 +139,8 @@ const main = async () => {
         sectionId: 1,
         userId: user.id,
         priority: Task.Priority.MEDIUM,
+        dueDate: dayAfterTomorrow,
+        content: 'This can wait until next week',
       },
       {
         title: 'Medium priority task 3',
@@ -89,9 +148,45 @@ const main = async () => {
         sectionId: 1,
         userId: user.id,
         priority: Task.Priority.MEDIUM,
+        dueDate: dayAfterTomorrow,
+        content: 'This can wait until next week',
       },
       {
-        title: 'Low priority task 3',
+        title: 'Medium priority task 4',
+        projectId: projects.id,
+        sectionId: 1,
+        userId: user.id,
+        priority: Task.Priority.MEDIUM,
+        dueDate: nextWeek,
+        content: 'This can wait until next week',
+      },
+      {
+        title: 'Medium priority task 5',
+        projectId: projects.id,
+        sectionId: 1,
+        userId: user.id,
+        priority: Task.Priority.MEDIUM,
+        dueDate: nextWeek,
+        content: 'This can wait until next week',
+      },
+      {
+        title: 'Medium priority task 6',
+        projectId: projects.id,
+        sectionId: 1,
+        userId: user.id,
+        priority: Task.Priority.MEDIUM,
+        dueDate: nextWeek,
+        content: 'This can wait until next week',
+      },
+      {
+        title: 'Low priority task 1',
+        projectId: projects.id,
+        sectionId: 3,
+        userId: user.id,
+        priority: Task.Priority.LOW,
+      },
+      {
+        title: 'Low priority task 2',
         projectId: projects.id,
         sectionId: 3,
         userId: user.id,
@@ -105,14 +200,7 @@ const main = async () => {
         priority: Task.Priority.LOW,
       },
       {
-        title: 'Low priority task 3',
-        projectId: projects.id,
-        sectionId: 3,
-        userId: user.id,
-        priority: Task.Priority.LOW,
-      },
-      {
-        title: 'Low priority task 3',
+        title: 'Low priority task 4',
         projectId: projects.id,
         sectionId: 3,
         userId: user.id,
@@ -137,7 +225,7 @@ const main = async () => {
       },
     ],
   });
-};
+}
 
 main()
   .then(() => {
