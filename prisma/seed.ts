@@ -225,6 +225,46 @@ async function main() {
       },
     ],
   });
+
+  await prisma.tag.create({
+    data: {
+      name: 'C++',
+      userId: user.id,
+      tasks: {
+        connect: [{ id: 1 }, { id: 2 }, { id: 3 }],
+      },
+    },
+  });
+
+  await prisma.tag.create({
+    data: {
+      name: 'Java',
+      userId: user.id,
+      tasks: {
+        connect: [{ id: 4 }, { id: 5 }, { id: 6 }],
+      },
+    },
+  });
+
+  await prisma.tag.create({
+    data: {
+      name: 'TypeScript',
+      userId: user.id,
+      tasks: {
+        connect: [{ id: 7 }, { id: 8 }, { id: 9 }],
+      },
+    },
+  });
+
+  await prisma.tag.create({
+    data: {
+      name: 'SQL',
+      userId: user.id,
+      tasks: {
+        connect: [{ id: 10 }, { id: 11 }, { id: 12 }],
+      },
+    },
+  });
 }
 
 main()
