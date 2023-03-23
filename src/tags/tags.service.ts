@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, Tag } from '@prisma/client';
+import { Prisma, Tag, Task } from '@prisma/client';
 import { QueryParams } from '../dto/query-params.dto';
 import { PaginatedList } from '../interfaces/paginated-list.interface';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class TagsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async create(args: Prisma.TagCreateArgs) {
     return await this.prisma.tag.create(args);
@@ -31,6 +31,21 @@ export class TagsService {
 
   async findOne(args: Prisma.TagFindFirstArgs) {
     return await this.prisma.tag.findFirst(args);
+  }
+
+  async getTasks(args: Prisma.TaskFindManyArgs): Promise<PaginatedList<Task>> {
+    const count = await this.prisma.task.count({
+      where: args.where,
+    });
+
+    const tasks = await this.prisma.task.findMany(args);
+
+    return {
+      pageIndex: args.skip,
+      pageSize: args.take,
+      count,
+      data: tasks,
+    };
   }
 
   async update(args: Prisma.TagUpdateArgs) {

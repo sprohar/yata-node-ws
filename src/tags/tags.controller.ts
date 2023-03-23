@@ -19,12 +19,13 @@ import { TagsService } from './tags.service';
 
 @Controller('tags')
 export class TagsController {
-  constructor(private readonly tagsService: TagsService) {}
+  constructor(private readonly tagsService: TagsService) { }
 
   @Post()
   async create(
     @ActiveUser('sub', ParseIntPipe) userId: number,
-    @Body() createTagDto: CreateTagDto) {
+    @Body() createTagDto: CreateTagDto,
+  ) {
     return await this.tagsService.create({
       data: {
         ...createTagDto,
@@ -36,7 +37,8 @@ export class TagsController {
   @Get()
   async findAll(
     @ActiveUser('sub', ParseIntPipe) userId: number,
-    @Query() query: QueryParams) {
+    @Query() query: QueryParams,
+  ) {
     const { skip, take } = query;
     return await this.tagsService.findAll({
       skip: skip ? parseInt(skip) : QueryParams.SKIP_DEFAULT,
@@ -53,11 +55,37 @@ export class TagsController {
   @Get(':id')
   async findOne(
     @ActiveUser('sub', ParseIntPipe) userId: number,
-    @Param('id', ParseIntPipe) id: number) {
+    @Param('id', ParseIntPipe) id: number,
+  ) {
     return await this.tagsService.findOne({
       where: {
         id,
         userId,
+      },
+    });
+  }
+
+  @Get(':id/tasks')
+  async getTasks(
+    @ActiveUser('sub', ParseIntPipe) userId: number,
+    @Param('id', ParseIntPipe) tagId: number,
+    @Query() query: QueryParams,
+  ) {
+    return await this.tagsService.getTasks({
+      skip: query.skip ? +query.skip : QueryParams.SKIP_DEFAULT,
+      take: query.take
+        ? Math.min(+query.take, QueryParams.TAKE_DEFAULT)
+        : QueryParams.TAKE_DEFAULT,
+      where: {
+        userId,
+        tags: {
+          some: {
+            id: tagId,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: Prisma.SortOrder.asc,
       },
     });
   }
@@ -71,7 +99,7 @@ export class TagsController {
     const tagExists = await this.tagsService.exists({
       where: {
         id,
-        userId, 
+        userId,
       },
     });
     if (!tagExists) {
@@ -83,7 +111,7 @@ export class TagsController {
         ...updateTagDto,
       },
       where: {
-        id, 
+        id,
       },
     });
   }
@@ -91,10 +119,11 @@ export class TagsController {
   @Delete(':id')
   async remove(
     @ActiveUser('sub', ParseIntPipe) userId: number,
-    @Param('id', ParseIntPipe) id: number) {
+    @Param('id', ParseIntPipe) id: number,
+  ) {
     const tagExists = await this.tagsService.exists({
-      where: { 
-        id, 
+      where: {
+        id,
         userId,
       },
     });
@@ -103,7 +132,7 @@ export class TagsController {
     }
 
     return await this.tagsService.remove({
-      where: { 
+      where: {
         id,
       },
     });

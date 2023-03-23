@@ -82,16 +82,13 @@ export class TasksController {
     }
 
     delete createTaskDto.tagIds;
-    return await this.tasksService.create({
+    await this.tasksService.create({
       data: {
         ...createTaskDto,
         userId,
         tags: {
           connect: tags,
         },
-      },
-      include: {
-        tags: true,
       },
     });
   }
