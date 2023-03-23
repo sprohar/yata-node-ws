@@ -75,7 +75,7 @@ export class ChronoController {
     const skip: number = query.skip ? +query.skip : QueryParams.SKIP_DEFAULT;
     const take: number = query.take ? +query.take : QueryParams.TAKE_DEFAULT;
     const prisma: PrismaService = this.tasksService.db();
-    const count: number = await prisma.$executeRaw`
+    const rs: Array<any> = await prisma.$queryRaw`
         SELECT COUNT(id) FROM task 
         WHERE due_date 
           BETWEEN 
@@ -83,6 +83,7 @@ export class ChronoController {
               AND 
             TO_TIMESTAMP(${to}, 'YYYY-MM-DD')`;
 
+    const count = parseInt(rs[0].count); 
     const resultSet: Array<Task> = await prisma.$queryRaw`
         SELECT 
           id, 
