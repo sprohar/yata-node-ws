@@ -14,7 +14,8 @@ import {
 } from '@nestjs/common';
 import { BadRequestException } from '@nestjs/common/exceptions';
 import { ApiTags } from '@nestjs/swagger/dist/decorators';
-import { Prisma } from '@prisma/client';
+import { Prisma, Tag } from '@prisma/client';
+import { TagsService } from '../tags/tags.service';
 import { QueryParams } from '../dto/query-params.dto';
 import { ActiveUser } from '../iam/decorators/active-user.decorator';
 import { ProjectsService } from '../projects/projects.service';
@@ -30,7 +31,8 @@ export class TasksController {
   constructor(
     private readonly projectsService: ProjectsService,
     private readonly tasksService: TasksService,
-  ) {}
+    private readonly tagsService: TagsService,
+  ) { }
 
   @Post()
   async create(
@@ -45,14 +47,51 @@ export class TasksController {
       },
     });
 
-    if (!projectExists) {
+    if (!projectExists)
       throw new BadRequestException('Project does not exist.');
+
+    const tagIds = createTaskDto.tagIds;
+    if (tagIds === undefined) {
+      return await this.tasksService.create({
+        data: {
+          ...createTaskDto,
+          userId,
+        },
+      });
     }
 
+    const ids: number[] = [];
+    for (const id of tagIds) {
+      const parsed = parseInt(id);
+      if (isNaN(parsed)) throw new BadRequestException();
+      ids.push(parsed);
+    }
+
+    const tags: Tag[] = [];
+    for (const id of ids) {
+      const tag = await this.tagsService.findOne({
+        select: { id: true },
+        where: {
+          id,
+        },
+      });
+
+      if (!tag) throw new BadRequestException();
+
+      tags.push(tag);
+    }
+
+    delete createTaskDto.tagIds;
     return await this.tasksService.create({
       data: {
         ...createTaskDto,
         userId,
+        tags: {
+          connect: tags,
+        },
+      },
+      include: {
+        tags: true,
       },
     });
   }

@@ -1,13 +1,17 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
+  IsArray,
   IsBoolean,
   IsEnum,
   IsISO8601,
   IsNotEmpty,
   IsNumber,
+  IsNumberString,
   IsOptional,
   IsString,
   MaxLength,
+  ValidateNested,
 } from 'class-validator';
 import { Task } from '../entities/task.entity';
 
@@ -68,4 +72,8 @@ export class CreateTaskDto {
   @IsOptional()
   @IsEnum(Task.Priority)
   priority?: Task.Priority;
+
+  @IsOptional()
+  @IsArray()
+  tagIds?: string[];
 }
