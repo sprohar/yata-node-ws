@@ -55,7 +55,6 @@ export class TasksService {
     });
 
     const { skip, take } = params;
-    this.prisma.task.findMany();
     const tasks = await this.prisma.task.findMany({
       where: params.where,
       include: params.include,
