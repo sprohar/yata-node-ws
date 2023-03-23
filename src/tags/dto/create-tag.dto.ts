@@ -1,7 +1,12 @@
-import { IsNotEmpty, IsString } from "class-validator";
+import { IsHexColor, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateTagDto {
   @IsString()
   @IsNotEmpty()
-  name: string; 
+  name: string;
+
+  @IsString()
+  @IsHexColor()
+  @IsOptional()
+  colorHexCode?: string;
 }

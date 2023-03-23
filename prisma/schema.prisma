@@ -95,12 +95,13 @@ model Section {
 }
 
 model Tag {
-  id     Int    @id @default(autoincrement())
-  name   String @db.VarChar(32)
+  id           Int     @id @default(autoincrement())
+  name         String  @db.VarChar(32)
+  colorHexCode String? @db.VarChar(8)
   // relations
-  tasks  Task[]
-  User   User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId Int    @map("user_id")
+  tasks        Task[]
+  User         User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       Int     @map("user_id")
 
   @@map("tag")
 }
