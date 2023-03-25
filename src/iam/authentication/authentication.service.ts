@@ -1,8 +1,4 @@
-import {
-  Inject,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
@@ -27,12 +23,11 @@ export class AuthenticationService {
     private refreshTokenIdsStorage: RefreshTokenIdsStorage,
     @Inject(jwtConfig.KEY)
     private readonly jwtConfiguration: ConfigType<typeof jwtConfig>,
-  ) { }
+  ) {}
 
   async logout(userId: number) {
     await this.refreshTokenIdsStorage.invalidate(userId);
   }
-
 
   async refreshTokens(refreshToken: string) {
     try {
@@ -53,7 +48,7 @@ export class AuthenticationService {
           username: true,
           createdAt: true,
           updatedAt: true,
-        }
+        },
       });
 
       await this.refreshTokenIdsStorage.validate(
@@ -69,7 +64,7 @@ export class AuthenticationService {
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,
         user,
-      }
+      };
     } catch (error) {
       if (error instanceof InvalidatedRefreshTokenError) {
         console.error(error);
@@ -85,16 +80,18 @@ export class AuthenticationService {
         pwd: await this.hashingService.hash(signUpDto.password),
       });
 
-      const { accessToken, refreshToken } = await this.generateTokens(user as User);
+      const { accessToken, refreshToken } = await this.generateTokens(
+        user as User,
+      );
       return {
         accessToken,
         refreshToken,
         user,
-      }
+      };
     } catch (err) {
       if (err instanceof PrismaClientKnownRequestError) {
         if (err.code === PrismaClientErrorCode.UNIQUE_CONSTRAINT_VIOLATION) {
-          throw new UnauthorizedException(); 
+          throw new UnauthorizedException();
         }
       }
       throw err;
@@ -121,13 +118,14 @@ export class AuthenticationService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    delete user.pwd;
     // create tokens in parallel
     const { accessToken, refreshToken } = await this.generateTokens(user);
     return {
       accessToken,
       refreshToken,
       user,
-    }
+    };
   }
 
   async generateTokens(user: User) {
