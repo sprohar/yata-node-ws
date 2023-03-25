@@ -13,10 +13,10 @@ import { Task } from '../entities/task.entity';
 
 export class UpdateTaskDto {
   @ApiProperty()
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   @MaxLength(Task.Title.MAX_LENGTH)
-  title: string;
+  title?: string;
 
   @ApiProperty()
   @IsOptional()
