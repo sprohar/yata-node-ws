@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Tag } from '@prisma/client';
 import {
   IsArray,
   IsBoolean,
@@ -7,11 +7,9 @@ import {
   IsISO8601,
   IsNotEmpty,
   IsNumber,
-  IsNumberString,
   IsOptional,
   IsString,
   MaxLength,
-  ValidateNested,
 } from 'class-validator';
 import { Task } from '../entities/task.entity';
 
@@ -75,5 +73,5 @@ export class CreateTaskDto {
 
   @IsOptional()
   @IsArray()
-  tagIds?: string[];
+  tags?: Tag[];
 }

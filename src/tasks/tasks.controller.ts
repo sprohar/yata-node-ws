@@ -14,8 +14,7 @@ import {
 } from '@nestjs/common';
 import { BadRequestException } from '@nestjs/common/exceptions';
 import { ApiTags } from '@nestjs/swagger/dist/decorators';
-import { Prisma, Tag } from '@prisma/client';
-import { TagsService } from '../tags/tags.service';
+import { Prisma } from '@prisma/client';
 import { QueryParams } from '../dto/query-params.dto';
 import { ActiveUser } from '../iam/decorators/active-user.decorator';
 import { ProjectsService } from '../projects/projects.service';
@@ -31,8 +30,7 @@ export class TasksController {
   constructor(
     private readonly projectsService: ProjectsService,
     private readonly tasksService: TasksService,
-    private readonly tagsService: TagsService,
-  ) { }
+  ) {}
 
   @Post()
   async create(
@@ -50,45 +48,21 @@ export class TasksController {
     if (!projectExists)
       throw new BadRequestException('Project does not exist.');
 
-    const tagIds = createTaskDto.tagIds;
-    if (tagIds === undefined) {
-      return await this.tasksService.create({
-        data: {
-          ...createTaskDto,
-          userId,
-        },
-      });
-    }
+    const selectedTags = createTaskDto.tags;
+    delete createTaskDto.tags;
+    const newTags = selectedTags.filter((t) => t.id === undefined);
 
-    const ids: number[] = [];
-    for (const id of tagIds) {
-      const parsed = parseInt(id);
-      if (isNaN(parsed)) throw new BadRequestException();
-      ids.push(parsed);
-    }
-
-    const tags: Tag[] = [];
-    for (const id of ids) {
-      const tag = await this.tagsService.findOne({
-        select: { id: true },
-        where: {
-          id,
-        },
-      });
-
-      if (!tag) throw new BadRequestException();
-
-      tags.push(tag);
-    }
-
-    delete createTaskDto.tagIds;
-    await this.tasksService.create({
+    return await this.tasksService.create({
       data: {
         ...createTaskDto,
         userId,
         tags: {
-          connect: tags,
+          connect: selectedTags.filter((t) => t.id !== undefined),
+          create: newTags.map((tag) => ({ ...tag, userId })),
         },
+      },
+      include: {
+        tags: true,
       },
     });
   }
@@ -149,6 +123,7 @@ export class TasksController {
       },
       include: {
         subtasks: true,
+        tags: true,
       },
     });
 
