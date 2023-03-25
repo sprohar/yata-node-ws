@@ -103,6 +103,7 @@ model Tag {
   User         User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId       Int     @map("user_id")
 
+  @@unique([name, userId])
   @@map("tag")
 }
 

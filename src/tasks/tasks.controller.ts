@@ -57,7 +57,9 @@ export class TasksController {
         ...createTaskDto,
         userId,
         tags: {
-          connect: selectedTags.filter((t) => t.id !== undefined),
+          connect: selectedTags
+            .filter((t) => t.id !== undefined)
+            .map((t) => ({ id: t.id })),
           create: newTags.map((tag) => ({ ...tag, userId })),
         },
       },
