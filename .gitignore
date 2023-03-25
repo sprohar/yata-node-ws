@@ -2,6 +2,7 @@
 .env.test
 .vscode/
 .idea/
+*.rdb
 
 # compiled output
 /dist
