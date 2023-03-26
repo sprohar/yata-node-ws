@@ -72,21 +72,21 @@ async function main() {
       {
         title: 'Create controllers',
         projectId: projectYataApi.id,
-        sectionId: 4,
+        sectionId: 3,
         userId: user.id,
         dueDate: today,
       },
       {
         title: 'Create services',
         projectId: projectYataApi.id,
-        sectionId: 4,
+        sectionId: 2,
         userId: user.id,
         dueDate: today,
       },
       {
         title: 'e2e tests',
         projectId: projectYataApi.id,
-        sectionId: 4,
+        sectionId: 1,
         userId: user.id,
         dueDate: today,
       },
@@ -234,21 +234,21 @@ async function main() {
   await prisma.task.createMany({
     data: [
       {
-        title: 'Create controllers',
+        title: 'SPA: Create controllers',
         projectId: projectYataSpa.id,
         sectionId: 4,
         userId: user.id,
         dueDate: today,
       },
       {
-        title: 'Create services',
+        title: 'SPA: Create services',
         projectId: projectYataSpa.id,
         sectionId: 4,
         userId: user.id,
         dueDate: today,
       },
       {
-        title: 'e2e tests',
+        title: 'SPA: e2e tests',
         projectId: projectYataSpa.id,
         sectionId: 4,
         userId: user.id,
@@ -257,7 +257,7 @@ async function main() {
       {
         title: 'High priority task 1',
         projectId: projectYataSpa.id,
-        sectionId: 2,
+        sectionId: 5,
         userId: user.id,
         priority: Task.Priority.HIGH,
         dueDate: today,
@@ -265,7 +265,7 @@ async function main() {
       {
         title: 'High priority task 2',
         projectId: projectYataSpa.id,
-        sectionId: 2,
+        sectionId: 5,
         userId: user.id,
         priority: Task.Priority.HIGH,
         dueDate: today,
@@ -273,7 +273,7 @@ async function main() {
       {
         title: 'High priority task 3',
         projectId: projectYataSpa.id,
-        sectionId: 2,
+        sectionId: 5,
         userId: user.id,
         priority: Task.Priority.HIGH,
         dueDate: today,
@@ -281,7 +281,7 @@ async function main() {
       {
         title: 'High priority task 4',
         projectId: projectYataSpa.id,
-        sectionId: 2,
+        sectionId: 5,
         userId: user.id,
         priority: Task.Priority.HIGH,
         dueDate: tomorrow,
@@ -289,7 +289,7 @@ async function main() {
       {
         title: 'High priority task 5',
         projectId: projectYataSpa.id,
-        sectionId: 2,
+        sectionId: 6,
         userId: user.id,
         priority: Task.Priority.HIGH,
         dueDate: tomorrow,
@@ -297,7 +297,7 @@ async function main() {
       {
         title: 'High priority task 6',
         projectId: projectYataSpa.id,
-        sectionId: 2,
+        sectionId: 4,
         userId: user.id,
         priority: Task.Priority.HIGH,
         dueDate: tomorrow,
@@ -305,7 +305,7 @@ async function main() {
       {
         title: 'Medium priority task 1',
         projectId: projectYataSpa.id,
-        sectionId: 1,
+        sectionId: 4,
         userId: user.id,
         priority: Task.Priority.MEDIUM,
         dueDate: dayAfterTomorrow,
@@ -314,7 +314,7 @@ async function main() {
       {
         title: 'Medium priority task 2',
         projectId: projectYataSpa.id,
-        sectionId: 1,
+        sectionId: 5,
         userId: user.id,
         priority: Task.Priority.MEDIUM,
         dueDate: dayAfterTomorrow,
@@ -323,7 +323,7 @@ async function main() {
       {
         title: 'Medium priority task 3',
         projectId: projectYataSpa.id,
-        sectionId: 1,
+        sectionId: 6,
         userId: user.id,
         priority: Task.Priority.MEDIUM,
         dueDate: dayAfterTomorrow,
@@ -332,7 +332,7 @@ async function main() {
       {
         title: 'Medium priority task 4',
         projectId: projectYataSpa.id,
-        sectionId: 1,
+        sectionId: 4,
         userId: user.id,
         priority: Task.Priority.MEDIUM,
         dueDate: nextWeek,
@@ -341,7 +341,7 @@ async function main() {
       {
         title: 'Medium priority task 5',
         projectId: projectYataSpa.id,
-        sectionId: 1,
+        sectionId: 4,
         userId: user.id,
         priority: Task.Priority.MEDIUM,
         dueDate: nextWeek,
@@ -350,7 +350,7 @@ async function main() {
       {
         title: 'Medium priority task 6',
         projectId: projectYataSpa.id,
-        sectionId: 1,
+        sectionId: 6,
         userId: user.id,
         priority: Task.Priority.MEDIUM,
         dueDate: nextWeek,
@@ -359,35 +359,35 @@ async function main() {
       {
         title: 'Low priority task 1',
         projectId: projectYataSpa.id,
-        sectionId: 3,
+        sectionId: 6,
         userId: user.id,
         priority: Task.Priority.LOW,
       },
       {
         title: 'Low priority task 2',
         projectId: projectYataSpa.id,
-        sectionId: 3,
+        sectionId: 5,
         userId: user.id,
         priority: Task.Priority.LOW,
       },
       {
         title: 'Low priority task 3',
         projectId: projectYataSpa.id,
-        sectionId: 3,
+        sectionId: 6,
         userId: user.id,
         priority: Task.Priority.LOW,
       },
       {
         title: 'Low priority task 4',
         projectId: projectYataSpa.id,
-        sectionId: 3,
+        sectionId: 4,
         userId: user.id,
         priority: Task.Priority.LOW,
       },
       {
         title: 'Low priority task 5',
         projectId: projectYataSpa.id,
-        sectionId: 3,
+        sectionId: 4,
         userId: user.id,
         priority: Task.Priority.LOW,
       },
