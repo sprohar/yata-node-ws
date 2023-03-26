@@ -2,12 +2,12 @@ export class Task {}
 
 export namespace Task {
   export enum Priority {
-    NONE,
-    HIGH,
-    MEDIUM,
-    LOW,
+    NONE = 0,
+    HIGH = 1,
+    MEDIUM = 2,
+    LOW = 3,
   }
-  
+
   export enum Title {
     MAX_LENGTH = 1024,
   }
@@ -21,6 +21,6 @@ export namespace Task {
     PRIORITY = 'priority',
     DUE_DATE = 'dueDate',
     INCEPTION = 'createdAt',
-    DEFAULT = 'createdAt'
+    DEFAULT = 'createdAt',
   }
 }
