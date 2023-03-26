@@ -5,11 +5,13 @@ import {
   IsISO8601,
   IsNotEmpty,
   IsNumber,
+  IsObject,
   IsOptional,
   IsString,
   MaxLength,
 } from 'class-validator';
 import { Task } from '../entities/task.entity';
+import { TaskRecurrence } from '../recur/task-recurrence';
 
 export class UpdateTaskDto {
   @ApiProperty()
@@ -68,4 +70,19 @@ export class UpdateTaskDto {
   @IsOptional()
   @IsEnum(Task.Priority)
   priority?: Task.Priority;
+
+  @ApiProperty()
+  @IsISO8601()
+  @IsOptional()
+  startDate?: string;
+
+  @ApiProperty()
+  @IsISO8601()
+  @IsOptional()
+  endDate?: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsObject()
+  recurrence?: TaskRecurrence;
 }

@@ -75,6 +75,7 @@ async function main() {
         sectionId: 3,
         userId: user.id,
         dueDate: today,
+        recurrencePattern: 'FREQ=WEEKLY;INTERVAL=1;COUNT=4',
       },
       {
         title: 'Create services',

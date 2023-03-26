@@ -7,11 +7,13 @@ import {
   IsISO8601,
   IsNotEmpty,
   IsNumber,
+  IsObject,
   IsOptional,
   IsString,
   MaxLength,
 } from 'class-validator';
 import { Task } from '../entities/task.entity';
+import { CreateTaskRecurrenceDto } from './create-task-recurrence.dto';
 
 export class CreateTaskDto {
   @ApiProperty()
@@ -59,7 +61,17 @@ export class CreateTaskDto {
   @ApiProperty()
   @IsISO8601()
   @IsOptional()
-  startedOn?: string;
+  startDate?: string;
+
+  @ApiProperty()
+  @IsISO8601()
+  @IsOptional()
+  endDate?: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsObject()
+  recurrence?: CreateTaskRecurrenceDto;
 
   @ApiProperty()
   @IsISO8601()

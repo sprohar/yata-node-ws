@@ -18,10 +18,9 @@ import { Prisma } from '@prisma/client';
 import { QueryParams } from '../dto/query-params.dto';
 import { ActiveUser } from '../iam/decorators/active-user.decorator';
 import { ProjectsService } from '../projects/projects.service';
-import { CreateTaskDto } from './dto/create-task.dto';
-import { TasksQueryParams } from './dto/tasks-query-params.dto';
-import { UpdateTaskDto } from './dto/update-task.dto';
+import { CreateTaskDto, UpdateTaskDto, TasksQueryParams } from './dto';
 import { Task } from './entities/task.entity';
+import { TaskRecurrence } from './recur/task-recurrence';
 import { TasksService } from './tasks.service';
 
 @ApiTags('Tasks')
@@ -30,14 +29,22 @@ export class TasksController {
   constructor(
     private readonly projectsService: ProjectsService,
     private readonly tasksService: TasksService,
-  ) {}
+  ) { }
 
-  @Post()
-  async create(
-    @ActiveUser('sub', ParseIntPipe) userId: number,
-    @Param('projectId', ParseIntPipe) projectId: number,
-    @Body() createTaskDto: CreateTaskDto,
-  ) {
+  private ensureValidRecurrence(dto: CreateTaskDto) {
+    if (dto.recurrence && dto.startDate) {
+      if (dto.recurrence.count !== undefined && dto.endDate) {
+        return;
+      }
+      if (dto.recurrence.count && dto.endDate === undefined) {
+        throw new BadRequestException('"endDate" is undefined');
+      }
+    }
+
+    throw new BadRequestException('"startDate" is undefined');
+  }
+
+  private async ensureProjectExists(projectId: number, userId: number) {
     const projectExists = await this.projectsService.exists({
       where: {
         id: projectId,
@@ -47,26 +54,53 @@ export class TasksController {
 
     if (!projectExists)
       throw new BadRequestException('Project does not exist.');
+  }
+
+  @Post()
+  async create(
+    @ActiveUser('sub', ParseIntPipe) userId: number,
+    @Param('projectId', ParseIntPipe) projectId: number,
+    @Body() createTaskDto: CreateTaskDto,
+  ) {
+    await this.ensureProjectExists(projectId, userId);
+
+    let recurrencePattern: string | null = null;
+    if (createTaskDto.recurrence) {
+      this.ensureValidRecurrence(createTaskDto);
+      recurrencePattern = TaskRecurrence.toPattern(createTaskDto.recurrence);
+    }
 
     const selectedTags = createTaskDto.tags;
-    delete createTaskDto.tags;
-    const newTags = selectedTags.filter((t) => t.id === undefined);
+    const newTags = selectedTags?.filter((t) => t.id === undefined);
 
-    return await this.tasksService.create({
+    delete createTaskDto.tags;
+    delete createTaskDto.recurrence;
+
+    const task = await this.tasksService.create({
       data: {
         ...createTaskDto,
         userId,
+        recurrencePattern,
         tags: {
-          connect: selectedTags
-            .filter((t) => t.id !== undefined)
-            .map((t) => ({ id: t.id })),
-          create: newTags.map((tag) => ({ ...tag, userId })),
+          connect: !selectedTags
+            ? undefined
+            : selectedTags
+              .filter((t) => t.id !== undefined)
+              .map((t) => ({ id: t.id })),
+          create: !newTags
+            ? undefined
+            : newTags.map((tag) => ({ ...tag, userId })),
         },
       },
       include: {
-        tags: true,
+        tags: selectedTags || newTags ? true : false,
       },
     });
+
+    return {
+      ...task,
+      recurrence: TaskRecurrence.parse(task.recurrencePattern),
+    } as Task;
   }
 
   @Get()
@@ -133,7 +167,12 @@ export class TasksController {
       throw new NotFoundException();
     }
 
-    return task;
+    if (!task.recurrencePattern) return task;
+
+    return {
+      ...task,
+      recurrence: TaskRecurrence.parse(task.recurrencePattern),
+    };
   }
 
   @Post(':id/duplicate')
@@ -176,14 +215,14 @@ export class TasksController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateTaskDto: UpdateTaskDto,
   ) {
-    const taskExists = await this.tasksService.exists({
+    const task = await this.tasksService.findOne({
       where: {
         id,
         userId,
       },
     });
 
-    if (!taskExists) {
+    if (!task) {
       throw new NotFoundException();
     }
 
@@ -196,13 +235,41 @@ export class TasksController {
       updateTaskDto.completedOn = null;
     }
 
+    let recurrencePattern: string | null = null;
+    if (updateTaskDto.recurrence) {
+      recurrencePattern = TaskRecurrence.toPattern(updateTaskDto.recurrence);
+    }
+
+    delete updateTaskDto.recurrence;
     try {
-      return await this.tasksService.update({
+      if (task.recurrencePattern !== recurrencePattern) {
+        const updatedTask = await this.tasksService.update({
+          data: {
+            ...updateTaskDto,
+            recurrencePattern,
+          },
+          where: {
+            id,
+          },
+        });
+
+        return {
+          ...updatedTask,
+          recurrence: TaskRecurrence.parse(updatedTask.recurrencePattern),
+        } as Task;
+      }
+
+      const updatedTask = await this.tasksService.update({
         data: updateTaskDto,
         where: {
           id,
         },
       });
+
+      return {
+        ...updatedTask,
+        recurrence: TaskRecurrence.parse(updatedTask.recurrencePattern),
+      } as Task;
     } catch (error) {
       throw new NotFoundException();
     }

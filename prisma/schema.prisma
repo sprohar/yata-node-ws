@@ -40,26 +40,34 @@ model Project {
 }
 
 model Task {
-  id          Int       @id @default(autoincrement())
-  title       String    @db.VarChar(1024)
-  content     String?   @db.VarChar(8192)
-  priority    Int       @default(0)
-  completed   Boolean   @default(false)
-  deleted     Boolean   @default(false)
-  allDay      Boolean   @default(true) @map("all_day")
-  dueDate     DateTime? @map("due_date") @db.Timestamptz
+  id        Int       @id @default(autoincrement())
+  title     String    @db.VarChar(1024)
+  content   String?   @db.VarChar(8192)
+  priority  Int       @default(0)
+  completed Boolean   @default(false)
+  deleted   Boolean   @default(false)
+  allDay    Boolean   @default(true) @map("all_day")
+  dueDate   DateTime? @map("due_date") @db.Timestamptz
+
+  // recurrence
+  startDate         DateTime? @map("start_date") @db.Timestamptz
+  endDate           DateTime? @map("end_date") @db.Timestamptz
+  recurrencePattern String?   @map("recurrence_pattern") @db.VarChar(64)
+
+  // misc timestamps
   completedOn DateTime? @map("completed_on") @db.Timestamptz
   createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz
   updatedAt   DateTime? @updatedAt @map("updated_at") @db.Timestamptz
+
   // relations
-  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  projectId   Int       @map("project_id")
-  section     Section?  @relation(fields: [sectionId], references: [id], onDelete: Cascade)
-  sectionId   Int?      @map("section_id")
-  tags        Tag[]
-  subtasks    Subtask[]
-  User        User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId      Int       @map("user_id")
+  project   Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId Int       @map("project_id")
+  section   Section?  @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  sectionId Int?      @map("section_id")
+  tags      Tag[]
+  subtasks  Subtask[]
+  User      User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int       @map("user_id")
 
   @@index([content])
   @@map("task")
