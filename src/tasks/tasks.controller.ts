@@ -173,7 +173,6 @@ export class TasksController {
   @Patch(':id')
   async update(
     @ActiveUser('sub', ParseIntPipe) userId: number,
-    @Param('projectId', ParseIntPipe) projectId: number,
     @Param('id', ParseIntPipe) id: number,
     @Body() updateTaskDto: UpdateTaskDto,
   ) {
@@ -181,7 +180,6 @@ export class TasksController {
       where: {
         id,
         userId,
-        projectId,
       },
     });
 
