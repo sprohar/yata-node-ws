@@ -31,7 +31,7 @@ export class ProjectsService {
     });
 
     params.skip = params.skip;
-    params.take = Math.min(params.take, QueryParams.TAKE_MAX);
+    params.take = Math.min(params.take, QueryParams.MAX_TAKE);
     const data = await this.prisma.project.findMany({
       ...params,
     });

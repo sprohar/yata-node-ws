@@ -17,7 +17,7 @@ export class TagsService {
     const count = await this.prisma.tag.count();
     const data = await this.prisma.tag.findMany({
       skip,
-      take: take < QueryParams.TAKE_MAX ? take : QueryParams.TAKE_DEFAULT,
+      take: take < QueryParams.MAX_TAKE ? take : QueryParams.TAKE_DEFAULT,
       orderBy,
     });
 

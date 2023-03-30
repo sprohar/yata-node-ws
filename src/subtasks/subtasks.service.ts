@@ -30,7 +30,7 @@ export class SubtasksService {
     const subtasks = await this.prisma.subtask.findMany({
       where,
       skip,
-      take: Math.min(take, QueryParams.TAKE_MAX),
+      take: Math.min(take, QueryParams.MAX_TAKE),
       orderBy,
     });
 
