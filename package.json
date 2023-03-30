@@ -32,9 +32,9 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "pretest:e2e": "npm run db:test:restart",
-    "test:e2e": "dotenv -e .env.test -- jest --config ./test/jest-e2e.json --watch --no-cache --runInBand",
+    "test:e2e": "dotenv -e .env.test -- jest --config ./__tests__/jest-e2e.json --watch --no-cache --runInBand",
     "pretest:e2e:native:db": "npm run native:db:restart",
-    "e2e:test:native:db": "dotenv -e .env.test -- jest --config ./test/jest-e2e.json --watch --no-cache --runInBand"
+    "e2e:test:native:db": "dotenv -e .env.test -- jest --config ./__tests__/jest-e2e.json --watch --no-cache --runInBand"
   },
   "dependencies": {
     "@nestjs/common": "^9.0.0",
