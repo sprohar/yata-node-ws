@@ -18,10 +18,11 @@ import { Prisma } from '@prisma/client';
 import { QueryParams } from '../dto/query-params.dto';
 import { ActiveUser } from '../iam/decorators/active-user.decorator';
 import { ProjectsService } from '../projects/projects.service';
+import { TaskAttributes } from './attributes';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
-import { TaskAttributes } from './attributes';
 import { Priority } from './enum/priority.enum';
+import { TaskQueryParams } from './task-query-params';
 import { TasksService } from './tasks.service';
 
 @ApiTags('Tasks')
@@ -72,39 +73,73 @@ export class TasksController {
   @Get('tasks')
   async getAll(
     @ActiveUser('sub', ParseIntPipe) userId: number,
-    @Query('orderBy') orderBy = TaskAttributes.OrderBy.CREATED_AT,
-    @Query('dir') dir = Prisma.SortOrder.desc,
-    @Query('skip') skip = 0,
-    @Query('take') take = QueryParams.TAKE_DEFAULT,
-    @Query('priority') priority?: Priority,
-    @Query('projectId') projectId?: number,
-    @Query('title') title?: string,
+    @Query() query: TaskQueryParams,
   ) {
+    const orderBy: Prisma.TaskOrderByWithRelationInput = {
+      [query.orderBy ?? TaskAttributes.OrderBy.CREATED_AT]:
+        query.dir ?? Prisma.SortOrder.asc,
+    };
+
     const where: Prisma.TaskWhereInput = {
       userId,
     };
-    if (priority) {
-      if (!Object.values(Priority).includes(priority)) {
+
+    if (query.priority) {
+      if (!Object.values(Priority).includes(+query.priority)) {
         throw new BadRequestException();
       }
-      where.priority = priority;
+      where.priority = +query.priority as Priority;
     }
-    if (projectId) {
-      where.projectId = projectId;
+    if (query.projectId) {
+      where.projectId = query.projectId;
     }
-    if (title) {
+    if (query.title) {
       where.title = {
-        contains: title,
+        contains: query.title,
       };
     }
 
+    // date strings are in ISO format & take precedence over numeric timestamps
+    if (query.startDate || query.endDate) {
+      if (query.startDate && query.endDate) {
+        where.dueDate = {
+          gte: query.startDate,
+          lte: query.endDate,
+        };
+      } else if (query.startDate) {
+        where.dueDate = {
+          gte: query.startDate,
+        };
+      } else if (query.endDate) {
+        where.dueDate = {
+          lte: query.endDate,
+        };
+      }
+    } else if (query.from || query.to) {
+      const from = +query.from;
+      const to = +query.to;
+
+      if (from && to) {
+        where.dueDate = {
+          gte: new Date(from).toISOString(),
+          lte: new Date(to).toISOString(),
+        };
+      } else if (from) {
+        where.dueDate = {
+          gte: new Date(from).toISOString(),
+        };
+      } else if (to) {
+        where.dueDate = {
+          lte: new Date(to).toISOString(),
+        };
+      }
+    }
+
     return await this.tasksService.findAll({
-      skip: skip,
-      take: Math.min(take, QueryParams.MAX_TAKE),
+      skip: query.skip,
+      take: Math.min(query.take, QueryParams.MAX_TAKE),
       where,
-      orderBy: {
-        [orderBy]: dir,
-      },
+      orderBy,
       include: {
         subtasks: true,
       },

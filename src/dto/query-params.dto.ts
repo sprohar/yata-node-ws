@@ -8,12 +8,12 @@ export class QueryParams {
   static readonly MAX_TAKE = 100;
 
   @IsNumberString()
-  @ApiProperty({ description: 'The page index', required: false, default: 0 })
+  @ApiProperty({ description: 'The page index' })
   @IsOptional()
   skip?: string;
 
   @IsNumberString()
-  @ApiProperty({ description: 'The page size', required: false, default: 30 })
+  @ApiProperty({ description: 'The page size' })
   @IsOptional()
   take?: string;
 

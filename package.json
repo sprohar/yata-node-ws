@@ -20,6 +20,7 @@
     "native:db:restart": "npm run native:db:drop && npm run native:db:create",
     "db:test:up": "docker compose up test-db --detach",
     "db:test:restart": "npm run db:test:rm && npm run db:test:up && npm run prisma:test:deploy",
+    "db:push": "prisma db push",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
