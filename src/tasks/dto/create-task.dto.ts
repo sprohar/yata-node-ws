@@ -59,7 +59,17 @@ export class CreateTaskDto {
   @ApiProperty()
   @IsISO8601()
   @IsOptional()
-  startedOn?: string;
+  startDate?: string;
+
+  @ApiProperty()
+  @IsISO8601()
+  @IsOptional()
+  endDate?: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  rrule?: string;
 
   @ApiProperty()
   @IsISO8601()

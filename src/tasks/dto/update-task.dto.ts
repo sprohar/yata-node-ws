@@ -57,15 +57,25 @@ export class UpdateTaskDto {
   @ApiProperty()
   @IsISO8601()
   @IsOptional()
-  startedOn?: string;
-
-  @ApiProperty()
-  @IsISO8601()
-  @IsOptional()
   completedOn?: string;
 
   @ApiProperty({ enum: Task.Priority })
   @IsOptional()
   @IsEnum(Task.Priority)
   priority?: Task.Priority;
+
+  @ApiProperty()
+  @IsISO8601()
+  @IsOptional()
+  startDate?: string;
+
+  @ApiProperty()
+  @IsISO8601()
+  @IsOptional()
+  endDate?: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  rrule?: string;
 }
