@@ -19,20 +19,20 @@ import { QueryParams } from '../dto/query-params.dto';
 import { ActiveUser } from '../iam/decorators/active-user.decorator';
 import { ProjectsService } from '../projects/projects.service';
 import { CreateTaskDto } from './dto/create-task.dto';
-import { TasksQueryParams } from './dto/tasks-query-params.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
-import { Task } from './entities/task.entity';
+import { TaskAttributes } from './attributes';
+import { Priority } from './enum/priority.enum';
 import { TasksService } from './tasks.service';
 
 @ApiTags('Tasks')
-@Controller('projects/:projectId/tasks')
+@Controller()
 export class TasksController {
   constructor(
     private readonly projectsService: ProjectsService,
     private readonly tasksService: TasksService,
   ) {}
 
-  @Post()
+  @Post('projects/:projectId/tasks')
   async create(
     @ActiveUser('sub', ParseIntPipe) userId: number,
     @Param('projectId', ParseIntPipe) projectId: number,
@@ -48,7 +48,7 @@ export class TasksController {
     if (!projectExists)
       throw new BadRequestException('Project does not exist.');
 
-    const selectedTags = createTaskDto.tags;
+    const selectedTags = createTaskDto.tags ?? [];
     delete createTaskDto.tags;
     const newTags = selectedTags.filter((t) => t.id === undefined);
 
@@ -69,49 +69,49 @@ export class TasksController {
     });
   }
 
-  @Get()
+  @Get('tasks')
   async getAll(
     @ActiveUser('sub', ParseIntPipe) userId: number,
-    @Param('projectId', ParseIntPipe) projectId: number,
-    @Query() query: TasksQueryParams,
+    @Query('orderBy') orderBy = TaskAttributes.OrderBy.CREATED_AT,
+    @Query('dir') dir = Prisma.SortOrder.desc,
+    @Query('skip') skip = 0,
+    @Query('take') take = QueryParams.TAKE_DEFAULT,
+    @Query('priority') priority?: Priority,
+    @Query('projectId') projectId?: number,
+    @Query('title') title?: string,
   ) {
-    const orderBy = {};
-    orderBy[`${query.orderBy ?? Task.OrderBy.DEFAULT}`] =
-      query.dir ?? Prisma.SortOrder.desc;
-
-    let where: Prisma.TaskWhereInput = {
-      projectId,
+    const where: Prisma.TaskWhereInput = {
       userId,
     };
-
-    if (query.title) {
-      where = {
-        ...where,
-        content: {
-          contains: query.title,
-        },
+    if (priority) {
+      if (!Object.values(Priority).includes(priority)) {
+        throw new BadRequestException();
+      }
+      where.priority = priority;
+    }
+    if (projectId) {
+      where.projectId = projectId;
+    }
+    if (title) {
+      where.title = {
+        contains: title,
       };
     }
-    if (query.priority) {
-      where = {
-        ...where,
-        priority: query.priority,
-      };
-    }
 
-    const { skip, take } = query;
     return await this.tasksService.findAll({
-      skip: skip ? parseInt(skip) : QueryParams.SKIP_DEFAULT,
-      take: take ? parseInt(take) : QueryParams.TAKE_DEFAULT,
+      skip: skip,
+      take: Math.min(take, QueryParams.MAX_TAKE),
       where,
-      orderBy,
+      orderBy: {
+        [orderBy]: dir,
+      },
       include: {
         subtasks: true,
       },
     });
   }
 
-  @Get(':id')
+  @Get('projects/:projectId/tasks/:id')
   async findOne(
     @ActiveUser('sub', ParseIntPipe) userId: number,
     @Param('projectId', ParseIntPipe) projectId: number,
@@ -136,7 +136,7 @@ export class TasksController {
     return task;
   }
 
-  @Post(':id/duplicate')
+  @Post('projects/:projectId/tasks/:id/duplicate')
   async duplicate(
     @ActiveUser('sub', ParseIntPipe) userId: number,
     @Param('projectId', ParseIntPipe) projectId: number,
@@ -160,26 +160,28 @@ export class TasksController {
     });
 
     if (!taskExists) {
-      throw new BadRequestException();
+      throw new NotFoundException();
     }
 
     try {
-      return this.tasksService.duplicate(taskId);
+      return await this.tasksService.duplicate(taskId);
     } catch (error) {
       throw new BadRequestException();
     }
   }
 
-  @Patch(':id')
+  @Patch('projects/:projectId/tasks/:id')
   async update(
     @ActiveUser('sub', ParseIntPipe) userId: number,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('projectId', ParseIntPipe) projectId: number,
+    @Param('id', ParseIntPipe) taskId: number,
     @Body() updateTaskDto: UpdateTaskDto,
   ) {
     const taskExists = await this.tasksService.exists({
       where: {
-        id,
+        id: taskId,
         userId,
+        projectId,
       },
     });
 
@@ -200,7 +202,7 @@ export class TasksController {
       return await this.tasksService.update({
         data: updateTaskDto,
         where: {
-          id,
+          id: taskId,
         },
       });
     } catch (error) {
@@ -208,7 +210,7 @@ export class TasksController {
     }
   }
 
-  @Delete(':id')
+  @Delete('projects/:projectId/tasks/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(
     @ActiveUser('sub', ParseIntPipe) userId: number,

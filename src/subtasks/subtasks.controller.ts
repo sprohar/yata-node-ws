@@ -19,8 +19,8 @@ import { ApiTags } from '@nestjs/swagger';
 import { Prisma } from '@prisma/client';
 import { QueryParams } from '../dto/query-params.dto';
 import { ActiveUser } from '../iam/decorators/active-user.decorator';
-import { TasksQueryParams } from '../tasks/dto/tasks-query-params.dto';
-import { Task } from '../tasks/entities/task.entity';
+import { TaskAttributes } from '../tasks/attributes';
+import { Priority } from '../tasks/enum/priority.enum';
 import { TasksService } from '../tasks/tasks.service';
 import { CreateSubtaskDto } from './dto/create-subtask.dto';
 import { UpdateSubtaskDto } from './dto/update-subtask.dto';
@@ -62,21 +62,47 @@ export class SubtasksController {
   @Get()
   async getSubtasks(
     @Param('id', ParseIntPipe) taskId: number,
-    @Query() query: TasksQueryParams,
+    @ActiveUser('sub', ParseIntPipe) userId: number,
+    @Query('orderBy') orderBy = TaskAttributes.OrderBy.CREATED_AT,
+    @Query('dir') dir = Prisma.SortOrder.desc,
+    @Query('skip') skip = 0,
+    @Query('take') take = QueryParams.TAKE_DEFAULT,
+    @Query('priority') priority?: Priority,
+    @Query('title') title?: string,
   ) {
-    const orderBy = {};
-    orderBy[`${query.orderBy ?? Task.OrderBy.DEFAULT}`] =
-      query.dir ?? Prisma.SortOrder.desc;
-
-    const { skip, take } = query;
-    return await this.subtasksService.findAll({
-      skip: skip ? parseInt(skip) : QueryParams.SKIP_DEFAULT,
-      take: take ? parseInt(take) : QueryParams.TAKE_DEFAULT,
+    const taskExists = await this.tasksService.exists({
       where: {
-        taskId,
+        id: taskId,
+        userId,
       },
+    });
+
+    if (!taskExists) {
+      throw new BadRequestException();
+    }
+    
+    const where: Prisma.SubtaskWhereInput = {
+      taskId,
+    };
+
+    if (priority) {
+      if (!Object.values(Priority).includes(priority)) {
+        throw new BadRequestException();
+      }
+      where.priority = priority;
+    }
+    if (title) {
+      where.title = {
+        contains: title,
+      };
+    }
+
+    return await this.subtasksService.findAll({
+      skip: skip,
+      take: Math.min(take, QueryParams.MAX_TAKE),
+      where,
       orderBy: {
-        createdAt: Prisma.SortOrder.desc,
+        [orderBy]: dir,
       },
     });
   }

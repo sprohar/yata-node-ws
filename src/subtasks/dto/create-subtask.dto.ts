@@ -9,7 +9,8 @@ import {
   IsString,
   MaxLength,
 } from 'class-validator';
-import { Task } from '../../tasks/entities/task.entity';
+import { TaskAttributes } from '../../tasks/attributes';
+import { Priority } from '../../tasks/enum/priority.enum';
 
 export class CreateSubtaskDto {
   @IsNotEmpty()
@@ -19,7 +20,7 @@ export class CreateSubtaskDto {
   @ApiProperty()
   @IsNotEmpty()
   @IsString()
-  @MaxLength(Task.Title.MAX_LENGTH)
+  @MaxLength(TaskAttributes.Title.MAX_LENGTH)
   title: string;
 
   @ApiProperty()
@@ -40,7 +41,7 @@ export class CreateSubtaskDto {
   @ApiProperty()
   @IsOptional()
   @IsString()
-  @MaxLength(Task.Content.MAX_LENGTH)
+  @MaxLength(TaskAttributes.Content.MAX_LENGTH)
   content?: string;
 
   @ApiProperty()
@@ -58,8 +59,8 @@ export class CreateSubtaskDto {
   @IsOptional()
   completedOn?: string;
 
-  @ApiProperty({ enum: Task.Priority })
+  @ApiProperty({ enum: Priority })
   @IsOptional()
-  @IsEnum(Task.Priority)
-  priority?: Task.Priority;
+  @IsEnum(Priority)
+  priority?: Priority;
 }

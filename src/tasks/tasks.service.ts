@@ -59,7 +59,7 @@ export class TasksService {
       where: params.where,
       include: params.include,
       skip,
-      take: Math.min(take, QueryParams.TAKE_MAX),
+      take: Math.min(take, QueryParams.MAX_TAKE),
       orderBy: params.orderBy,
     });
 

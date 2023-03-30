@@ -3,19 +3,19 @@ import {
   IsBoolean,
   IsEnum,
   IsISO8601,
-  IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
   MaxLength,
 } from 'class-validator';
-import { Task } from '../entities/task.entity';
+import { TaskAttributes } from '../attributes';
+import { Priority } from '../enum/priority.enum';
 
 export class UpdateTaskDto {
   @ApiProperty()
   @IsOptional()
   @IsString()
-  @MaxLength(Task.Title.MAX_LENGTH)
+  @MaxLength(TaskAttributes.Title.MAX_LENGTH)
   title?: string;
 
   @ApiProperty()
@@ -34,7 +34,7 @@ export class UpdateTaskDto {
   isAllDay?: boolean;
 
   @ApiProperty()
-  @IsNotEmpty()
+  @IsOptional()
   @IsNumber()
   projectId: number;
 
@@ -46,7 +46,7 @@ export class UpdateTaskDto {
   @ApiProperty()
   @IsOptional()
   @IsString()
-  @MaxLength(Task.Content.MAX_LENGTH)
+  @MaxLength(TaskAttributes.Content.MAX_LENGTH)
   content?: string;
 
   @ApiProperty()
@@ -59,10 +59,10 @@ export class UpdateTaskDto {
   @IsOptional()
   completedOn?: string;
 
-  @ApiProperty({ enum: Task.Priority })
+  @ApiProperty({ enum: Priority })
   @IsOptional()
-  @IsEnum(Task.Priority)
-  priority?: Task.Priority;
+  @IsEnum(Priority)
+  priority?: Priority;
 
   @ApiProperty()
   @IsISO8601()
