@@ -43,16 +43,16 @@ model Task {
   id        Int       @id @default(autoincrement())
   title     String    @db.VarChar(1024)
   content   String?   @db.VarChar(8192)
-  priority  Int       @default(0)
+  priority  Int?      @default(0)
   completed Boolean   @default(false)
   deleted   Boolean   @default(false)
   allDay    Boolean   @default(true) @map("all_day")
   dueDate   DateTime? @map("due_date") @db.Timestamptz
+  sortOrder Int       @default(0) @map("sort_order")
 
   // recurrence
-  startDate DateTime? @map("start_date") @db.Timestamptz
-  endDate   DateTime? @map("end_date") @db.Timestamptz
-  rrule     String?   @map("rrule") @db.VarChar(1024)
+  rruleSet String? @map("rrule_set") @db.VarChar(1024)
+  rrule    String? @map("rrule") @db.VarChar(1024)
 
   // timestamps
   completedOn DateTime? @map("completed_on") @db.Timestamptz
