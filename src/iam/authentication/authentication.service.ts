@@ -23,7 +23,7 @@ export class AuthenticationService {
     private refreshTokenIdsStorage: RefreshTokenIdsStorage,
     @Inject(jwtConfig.KEY)
     private readonly jwtConfiguration: ConfigType<typeof jwtConfig>,
-  ) {}
+  ) { }
 
   async logout(userId: number) {
     await this.refreshTokenIdsStorage.invalidate(userId);
@@ -91,7 +91,7 @@ export class AuthenticationService {
     } catch (err) {
       if (err instanceof PrismaClientKnownRequestError) {
         if (err.code === PrismaClientErrorCode.UNIQUE_CONSTRAINT_VIOLATION) {
-          throw new UnauthorizedException();
+          throw new UnauthorizedException('Email already exists');
         }
       }
       throw err;

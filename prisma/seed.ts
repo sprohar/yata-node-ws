@@ -33,7 +33,7 @@ async function main() {
   const pwd = await argon.hash('password');
   const user = await prisma.user.create({
     data: {
-      email: 'daniel@sprohar.dev',
+      email: 'testuser@yata.app',
       pwd,
     },
   });
