@@ -2,7 +2,7 @@ import { Controller, Get, ParseIntPipe, Query } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { QueryParams } from '../dto/query-params.dto';
 import { ActiveUser } from '../iam/decorators';
-import { TaskAttributes } from '../tasks/attributes';
+import { TaskAttributes } from '../tasks/task-attributes';
 import { ChronoQueryParams } from './chrono-query-params';
 import { ChronoService } from './chrono.service';
 

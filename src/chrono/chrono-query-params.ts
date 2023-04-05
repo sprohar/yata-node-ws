@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsDateString, IsEnum, IsOptional } from 'class-validator';
 import { QueryParams } from '../dto/query-params.dto';
-import { TaskAttributes } from '../tasks/attributes';
+import { TaskAttributes } from '../tasks/task-attributes';
 
 export class ChronoQueryParams extends QueryParams {
   @ApiProperty()

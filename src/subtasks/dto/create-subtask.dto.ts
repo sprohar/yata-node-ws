@@ -9,8 +9,8 @@ import {
   IsString,
   MaxLength,
 } from 'class-validator';
-import { TaskAttributes } from '../../tasks/attributes';
 import { Priority } from '../../tasks/enum/priority.enum';
+import { TaskAttributes } from '../../tasks/task-attributes';
 
 export class CreateSubtaskDto {
   @IsNotEmpty()

@@ -8,8 +8,8 @@ import {
   IsString,
   MaxLength,
 } from 'class-validator';
-import { TaskAttributes } from '../attributes';
 import { Priority } from '../enum/priority.enum';
+import { TaskAttributes } from '../task-attributes';
 
 export class UpdateTaskDto {
   @ApiProperty()
@@ -20,13 +20,14 @@ export class UpdateTaskDto {
 
   @ApiProperty()
   @IsOptional()
-  @IsBoolean()
-  completed?: boolean;
+  @IsString()
+  @MaxLength(TaskAttributes.Content.MAX_LENGTH)
+  description?: string;
 
   @ApiProperty()
   @IsOptional()
   @IsBoolean()
-  deleted?: boolean;
+  isCompleted?: boolean;
 
   @ApiProperty()
   @IsOptional()
@@ -34,9 +35,9 @@ export class UpdateTaskDto {
   isAllDay?: boolean;
 
   @ApiProperty()
-  @IsOptional()
   @IsNumber()
-  projectId: number;
+  @IsOptional()
+  projectId?: number;
 
   @ApiProperty()
   @IsOptional()
@@ -57,16 +58,6 @@ export class UpdateTaskDto {
   @ApiProperty()
   @IsISO8601()
   @IsOptional()
-  completedOn?: string;
-
-  @ApiProperty({ enum: Priority })
-  @IsOptional()
-  @IsEnum(Priority)
-  priority?: Priority;
-
-  @ApiProperty()
-  @IsISO8601()
-  @IsOptional()
   startDate?: string;
 
   @ApiProperty()
@@ -78,4 +69,14 @@ export class UpdateTaskDto {
   @IsString()
   @IsOptional()
   rrule?: string;
+
+  @ApiProperty()
+  @IsISO8601()
+  @IsOptional()
+  completedAt?: string;
+
+  @ApiProperty({ enum: Priority })
+  @IsOptional()
+  @IsEnum(Priority)
+  priority?: Priority;
 }

@@ -11,7 +11,7 @@ import {
   IsString,
   MaxLength,
 } from 'class-validator';
-import { TaskAttributes } from '../attributes';
+import { TaskAttributes } from '../task-attributes';
 import { Priority } from '../enum/priority.enum';
 
 export class CreateTaskDto {
@@ -23,13 +23,14 @@ export class CreateTaskDto {
 
   @ApiProperty()
   @IsOptional()
-  @IsBoolean()
-  completed?: boolean;
+  @IsString()
+  @MaxLength(TaskAttributes.Content.MAX_LENGTH)
+  description?: string;
 
   @ApiProperty()
   @IsOptional()
   @IsBoolean()
-  deleted?: boolean;
+  isCompleted?: boolean;
 
   @ApiProperty()
   @IsOptional()
@@ -75,7 +76,7 @@ export class CreateTaskDto {
   @ApiProperty()
   @IsISO8601()
   @IsOptional()
-  completedOn?: string;
+  completedAt?: string;
 
   @ApiProperty({ enum: Priority })
   @IsOptional()

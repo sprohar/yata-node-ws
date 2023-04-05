@@ -7,8 +7,8 @@ import { SignUpDto } from '../src/iam/authentication/dto';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { CreateTaskDto } from '../src/tasks/dto/create-task.dto';
 import { UpdateTaskDto } from '../src/tasks/dto/update-task.dto';
-import { TaskAttributes } from '../src/tasks/attributes';
 import { Priority } from '../src/tasks/enum/priority.enum';
+import { TaskAttributes } from '../src/tasks/task-attributes';
 
 function attachAccessToken(req: request.Test, accessToken: string) {
   return req.set('Authorization', `Bearer ${accessToken}`);
@@ -604,7 +604,7 @@ describe('TasksController', () => {
       );
 
       const res = await attachAccessToken(req, accessToken);
-      
+
       expect(res.status).toEqual(HttpStatus.OK);
       expect(res.body).toBeDefined();
       expect(res.body.data.length).toEqual(1);

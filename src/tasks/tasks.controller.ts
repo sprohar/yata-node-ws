@@ -18,10 +18,10 @@ import { Prisma } from '@prisma/client';
 import { QueryParams } from '../dto/query-params.dto';
 import { ActiveUser } from '../iam/decorators/active-user.decorator';
 import { ProjectsService } from '../projects/projects.service';
-import { TaskAttributes } from './attributes';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { Priority } from './enum/priority.enum';
+import { TaskAttributes } from './task-attributes';
 import { TaskQueryParams } from './task-query-params';
 import { TasksService } from './tasks.service';
 
@@ -224,13 +224,13 @@ export class TasksController {
       throw new NotFoundException();
     }
 
-    if (updateTaskDto.completed) {
-      updateTaskDto.completedOn = new Date().toISOString();
+    if (updateTaskDto.isCompleted) {
+      updateTaskDto.completedAt = new Date().toISOString();
     } else if (
-      updateTaskDto.completed !== undefined &&
-      !updateTaskDto.completed
+      updateTaskDto.isCompleted !== undefined &&
+      !updateTaskDto.isCompleted
     ) {
-      updateTaskDto.completedOn = null;
+      updateTaskDto.completedAt = null;
     }
 
     try {

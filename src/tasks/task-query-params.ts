@@ -9,7 +9,7 @@ import {
   IsString,
 } from 'class-validator';
 import { QueryParams } from '../dto/query-params.dto';
-import { TaskAttributes } from './attributes';
+import { TaskAttributes } from './task-attributes';
 
 export class TaskQueryParams {
   @ApiProperty()

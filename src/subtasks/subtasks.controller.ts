@@ -19,8 +19,8 @@ import { ApiTags } from '@nestjs/swagger';
 import { Prisma } from '@prisma/client';
 import { QueryParams } from '../dto/query-params.dto';
 import { ActiveUser } from '../iam/decorators/active-user.decorator';
-import { TaskAttributes } from '../tasks/attributes';
 import { Priority } from '../tasks/enum/priority.enum';
+import { TaskAttributes } from '../tasks/task-attributes';
 import { TasksService } from '../tasks/tasks.service';
 import { CreateSubtaskDto } from './dto/create-subtask.dto';
 import { UpdateSubtaskDto } from './dto/update-subtask.dto';
@@ -80,7 +80,7 @@ export class SubtasksController {
     if (!taskExists) {
       throw new BadRequestException();
     }
-    
+
     const where: Prisma.SubtaskWhereInput = {
       taskId,
     };

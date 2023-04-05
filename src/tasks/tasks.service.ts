@@ -91,6 +91,10 @@ export class TasksService {
     return await this.prisma.task.update(args);
   }
 
+  async updateMany(args: Prisma.TaskUpdateManyArgs) {
+    return await this.prisma.task.updateMany(args);
+  }
+
   async remove(args: Prisma.TaskDeleteArgs): Promise<Task> {
     return await this.prisma.task.delete(args);
   }
