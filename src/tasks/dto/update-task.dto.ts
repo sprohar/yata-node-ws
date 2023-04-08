@@ -37,6 +37,11 @@ export class UpdateTaskDto {
   @ApiProperty()
   @IsNumber()
   @IsOptional()
+  parentId?: number;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsOptional()
   projectId?: number;
 
   @ApiProperty()

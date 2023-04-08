@@ -66,6 +66,64 @@ async function main() {
     },
   });
 
+  await prisma.task.create({
+    data: {
+      title: 'Task with subtasks',
+      projectId: projectYataApi.id,
+      userId: user.id,
+      subtasks: {
+        createMany: {
+          data: [
+            {
+              title: 'Subtask 1',
+              projectId: projectYataApi.id,
+              userId: user.id,
+            },
+            {
+              title: 'Subtask 2',
+              projectId: projectYataApi.id,
+              userId: user.id,
+            },
+            {
+              title: 'Subtask 3',
+              projectId: projectYataApi.id,
+              userId: user.id,
+            },
+          ],
+        },
+      },
+    },
+  });
+
+  await prisma.task.create({
+    data: {
+      title: 'Task with subtasks',
+      projectId: projectYataSpa.id,
+      userId: user.id,
+      subtasks: {
+        createMany: {
+          data: [
+            {
+              title: 'Subtask 1',
+              projectId: projectYataSpa.id,
+              userId: user.id,
+            },
+            {
+              title: 'Subtask 2',
+              projectId: projectYataSpa.id,
+              userId: user.id,
+            },
+            {
+              title: 'Subtask 3',
+              projectId: projectYataSpa.id,
+              userId: user.id,
+            },
+          ],
+        },
+      },
+    },
+  });
+
   // Create 20 tasks for project 1
   await prisma.task.createMany({
     data: [
@@ -394,22 +452,22 @@ async function main() {
     ],
   });
 
-  await prisma.subtask.createMany({
-    data: [
-      {
-        title: 'Project Activities',
-        taskId: 1,
-      },
-      {
-        title: 'Task Activities',
-        taskId: 1,
-      },
-      {
-        title: 'Tags',
-        taskId: 1,
-      },
-    ],
-  });
+  // await prisma.task.createMany({
+  //   data: [
+  //     {
+  //       title: 'Project Activities',
+  //       parentId: 1,
+  //     },
+  //     {
+  //       title: 'Task Activities',
+  //       parentId: 1,
+  //     },
+  //     {
+  //       title: 'Tags',
+  //       parentId: 1,
+  //     },
+  //   ],
+  // });
 
   await prisma.tag.create({
     data: {

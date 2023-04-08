@@ -154,6 +154,36 @@ describe('TasksController', () => {
 
       expect(res.status).toEqual(HttpStatus.CREATED);
     });
+
+    describe('Subtask', () => {
+      let parentTask: Task;
+
+      beforeEach(async () => {
+        parentTask = await prisma.task.create({
+          data: {
+            title: 'Task',
+            projectId: project.id,
+            userId: user.id,
+          },
+        });
+      });
+
+      it('should create a new Subtask', async () => {
+        const createSubtaskDto: CreateTaskDto = {
+          title: 'Task',
+          projectId: project.id,
+          parentId: parentTask.id,
+        };
+
+        const req = request(app.getHttpServer())
+          .post(`/projects/${project.id}/tasks`)
+          .send(createSubtaskDto);
+
+        const res = await attachAccessToken(req, accessToken);
+
+        expect(res.status).toEqual(HttpStatus.CREATED);
+      });
+    });
   });
 
   describe('GET Get task by id', () => {

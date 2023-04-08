@@ -23,6 +23,11 @@ export class CreateTaskDto {
 
   @ApiProperty()
   @IsOptional()
+  @IsNumber()
+  parentId?: number;
+
+  @ApiProperty()
+  @IsOptional()
   @IsString()
   @MaxLength(TaskAttributes.Content.MAX_LENGTH)
   description?: string;
@@ -62,11 +67,6 @@ export class CreateTaskDto {
   @IsISO8601()
   @IsOptional()
   startDate?: string;
-
-  @ApiProperty()
-  @IsISO8601()
-  @IsOptional()
-  endDate?: string;
 
   @ApiProperty()
   @IsString()

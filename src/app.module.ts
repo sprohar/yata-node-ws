@@ -9,7 +9,6 @@ import { PrismaModule } from './prisma/prisma.module';
 import { ProjectsModule } from './projects/projects.module';
 import { RedisModule } from './redis/redis.module';
 import { SectionsModule } from './sections/sections.module';
-import { SubtasksModule } from './subtasks/subtasks.module';
 import { TagsModule } from './tags/tags.module';
 import { TasksModule } from './tasks/tasks.module';
 import { UsersModule } from './users/users.module';
@@ -24,7 +23,6 @@ import { UsersModule } from './users/users.module';
     ProjectsModule,
     PrismaModule,
     TasksModule,
-    SubtasksModule,
     SectionsModule,
     TagsModule,
     IamModule,

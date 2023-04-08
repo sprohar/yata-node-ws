@@ -18,14 +18,14 @@ export class TasksService {
 
   async duplicate(taskId: number) {
     const task = await this.prisma.task.findUnique({ where: { id: taskId } });
-    const subtasks = await this.prisma.subtask.findMany({
+    const subtasks = await this.prisma.task.findMany({
       where: {
-        taskId,
+        parentId: taskId,
       },
     });
 
     delete task.id;
-    subtasks.forEach((subtask) => delete subtask.id && delete subtask.taskId);
+    subtasks.forEach((subtask) => delete subtask.id && delete subtask.parentId);
 
     return await this.prisma.task.create({
       data: {
