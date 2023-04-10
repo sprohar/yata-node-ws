@@ -15,7 +15,6 @@ import { ApiTags } from '@nestjs/swagger/dist/decorators';
 import { Prisma } from '@prisma/client';
 import { QueryParams } from '../dto/query-params.dto';
 import { ActiveUser } from '../iam/decorators/active-user.decorator';
-import { ProjectsService } from '../projects/projects.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { Priority } from './enum/priority.enum';
@@ -26,10 +25,7 @@ import { TasksService } from './tasks.service';
 @ApiTags('Tasks')
 @Controller('tasks')
 export class TasksController {
-  constructor(
-    private readonly projectsService: ProjectsService,
-    private readonly tasksService: TasksService,
-  ) {}
+  constructor(private readonly tasksService: TasksService) {}
 
   @Post()
   async create(
@@ -66,7 +62,7 @@ export class TasksController {
     @Query() query: TaskQueryParams,
   ) {
     const orderBy: Prisma.TaskOrderByWithRelationInput = {
-      [query.orderBy ?? TaskAttributes.OrderBy.CREATED_AT]:
+      [query.orderBy ?? TaskAttributes.OrderBy.DUE_DATE]:
         query.dir ?? Prisma.SortOrder.asc,
     };
 
