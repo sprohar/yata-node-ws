@@ -17,10 +17,24 @@ export class TasksService {
   }
 
   async duplicate(taskId: number) {
-    const task = await this.prisma.task.findUnique({ where: { id: taskId } });
+    const task = await this.prisma.task.findFirstOrThrow({
+      where: { id: taskId },
+    });
     const subtasks = await this.prisma.task.findMany({
       where: {
         parentId: taskId,
+      },
+    });
+    const tags = await this.prisma.tag.findMany({
+      select: {
+        id: true,
+      },
+      where: {
+        tasks: {
+          some: {
+            id: taskId,
+          },
+        },
       },
     });
 
@@ -35,9 +49,9 @@ export class TasksService {
             data: subtasks,
           },
         },
-      },
-      include: {
-        subtasks: true,
+        tags: {
+          connect: tags,
+        },
       },
     });
   }
