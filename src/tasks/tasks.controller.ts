@@ -24,51 +24,43 @@ import { TaskQueryParams } from './task-query-params';
 import { TasksService } from './tasks.service';
 
 @ApiTags('Tasks')
-@Controller()
+@Controller('tasks')
 export class TasksController {
   constructor(
     private readonly projectsService: ProjectsService,
     private readonly tasksService: TasksService,
   ) {}
 
-  @Post('projects/:projectId/tasks')
+  @Post()
   async create(
     @ActiveUser('sub', ParseIntPipe) userId: number,
-    @Param('projectId', ParseIntPipe) projectId: number,
     @Body() createTaskDto: CreateTaskDto,
   ) {
-    const projectExists = await this.projectsService.exists({
-      where: {
-        id: projectId,
-        userId,
-      },
-    });
-
-    if (!projectExists)
-      throw new BadRequestException('Project does not exist.');
-
     const selectedTags = createTaskDto.tags ?? [];
     delete createTaskDto.tags;
     const newTags = selectedTags.filter((t) => t.id === undefined);
-
-    return await this.tasksService.create({
-      data: {
-        ...createTaskDto,
-        userId,
-        tags: {
-          connect: selectedTags
-            .filter((t) => t.id !== undefined)
-            .map((t) => ({ id: t.id })),
-          create: newTags.map((tag) => ({ ...tag, userId })),
+    try {
+      return await this.tasksService.create({
+        data: {
+          ...createTaskDto,
+          userId,
+          tags: {
+            connect: selectedTags
+              .filter((t) => t.id !== undefined)
+              .map((t) => ({ id: t.id })),
+            create: newTags.map((tag) => ({ ...tag, userId })),
+          },
         },
-      },
-      include: {
-        tags: true,
-      },
-    });
+        include: {
+          tags: true,
+        },
+      });
+    } catch (error) {
+      throw new BadRequestException();
+    }
   }
 
-  @Get('tasks')
+  @Get()
   async getAll(
     @ActiveUser('sub', ParseIntPipe) userId: number,
     @Query() query: TaskQueryParams,
@@ -142,16 +134,14 @@ export class TasksController {
     });
   }
 
-  @Get('projects/:projectId/tasks/:id')
+  @Get(':id')
   async findOne(
     @ActiveUser('sub', ParseIntPipe) userId: number,
-    @Param('projectId', ParseIntPipe) projectId: number,
     @Param('id', ParseIntPipe) id: number,
   ) {
     const task = await this.tasksService.findOne({
       where: {
         id,
-        projectId,
         userId,
       },
       include: {
@@ -167,22 +157,11 @@ export class TasksController {
     return task;
   }
 
-  @Post('projects/:projectId/tasks/:id/duplicate')
+  @Post(':id/duplicate')
   async duplicate(
     @ActiveUser('sub', ParseIntPipe) userId: number,
-    @Param('projectId', ParseIntPipe) projectId: number,
     @Param('id', ParseIntPipe) taskId: number,
   ) {
-    const projectExists = await this.projectsService.exists({
-      where: {
-        id: projectId,
-      },
-    });
-
-    if (!projectExists) {
-      throw new BadRequestException();
-    }
-
     const taskExists = await this.tasksService.exists({
       where: {
         id: taskId,
@@ -201,10 +180,9 @@ export class TasksController {
     }
   }
 
-  @Patch('projects/:projectId/tasks/:id')
+  @Patch(':id')
   async update(
     @ActiveUser('sub', ParseIntPipe) userId: number,
-    @Param('projectId', ParseIntPipe) projectId: number,
     @Param('id', ParseIntPipe) taskId: number,
     @Body() updateTaskDto: UpdateTaskDto,
   ) {
@@ -212,7 +190,6 @@ export class TasksController {
       where: {
         id: taskId,
         userId,
-        projectId,
       },
     });
 
@@ -241,11 +218,10 @@ export class TasksController {
     }
   }
 
-  @Delete('projects/:projectId/tasks/:taskId/tags/:tagId')
+  @Delete(':id/tags/:tagId')
   async removeTagFromTask(
     @ActiveUser('sub', ParseIntPipe) _userId: number,
-    @Param('projectId', ParseIntPipe) _projectId: number,
-    @Param('taskId', ParseIntPipe) taskId: number,
+    @Param('id', ParseIntPipe) taskId: number,
     @Param('tagId', ParseIntPipe) tagId: number,
   ) {
     try {
@@ -270,17 +246,15 @@ export class TasksController {
     }
   }
 
-  @Delete('projects/:projectId/tasks/:id')
+  @Delete(':id')
   async remove(
     @ActiveUser('sub', ParseIntPipe) userId: number,
-    @Param('projectId', ParseIntPipe) projectId: number,
     @Param('id', ParseIntPipe) id: number,
   ) {
     const taskExists = await this.tasksService.exists({
       where: {
         id,
         userId,
-        projectId,
       },
     });
 
