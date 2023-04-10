@@ -3,8 +3,6 @@ import {
   Controller,
   Delete,
   Get,
-  HttpCode,
-  HttpStatus,
   NotFoundException,
   Param,
   ParseIntPipe,
@@ -24,7 +22,7 @@ import { ProjectsService } from './projects.service';
 @ApiTags('Projects')
 @Controller('projects')
 export class ProjectsController {
-  constructor(private readonly projectsService: ProjectsService) {}
+  constructor(private projectsService: ProjectsService) {}
 
   @Post()
   async create(
@@ -110,7 +108,6 @@ export class ProjectsController {
   }
 
   @Delete(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
   async remove(
     @ActiveUser('sub', ParseIntPipe) userId: number,
     @Param('id', ParseIntPipe) id: number,
@@ -131,6 +128,6 @@ export class ProjectsController {
       throw new NotFoundException();
     }
 
-    return HttpStatus.NO_CONTENT;
+    return project;
   }
 }
