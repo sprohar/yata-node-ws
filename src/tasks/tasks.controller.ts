@@ -3,8 +3,6 @@ import {
   Controller,
   Delete,
   Get,
-  HttpCode,
-  HttpStatus,
   NotFoundException,
   Param,
   ParseIntPipe,
@@ -82,6 +80,7 @@ export class TasksController {
 
     const where: Prisma.TaskWhereInput = {
       userId,
+      parentId: null,
     };
 
     if (query.priority) {
@@ -140,9 +139,6 @@ export class TasksController {
       take: Math.min(query.take, QueryParams.MAX_TAKE),
       where,
       orderBy,
-      include: {
-        subtasks: true,
-      },
     });
   }
 
@@ -245,8 +241,36 @@ export class TasksController {
     }
   }
 
+  @Delete('projects/:projectId/tasks/:taskId/tags/:tagId')
+  async removeTagFromTask(
+    @ActiveUser('sub', ParseIntPipe) _userId: number,
+    @Param('projectId', ParseIntPipe) _projectId: number,
+    @Param('taskId', ParseIntPipe) taskId: number,
+    @Param('tagId', ParseIntPipe) tagId: number,
+  ) {
+    try {
+      return await this.tasksService.update({
+        data: {
+          tags: {
+            disconnect: {
+              id: tagId,
+            },
+          },
+        },
+        where: {
+          id: taskId,
+        },
+        include: {
+          subtasks: true,
+          tags: true,
+        },
+      });
+    } catch (error) {
+      throw new BadRequestException();
+    }
+  }
+
   @Delete('projects/:projectId/tasks/:id')
-  @HttpCode(HttpStatus.NO_CONTENT)
   async remove(
     @ActiveUser('sub', ParseIntPipe) userId: number,
     @Param('projectId', ParseIntPipe) projectId: number,
