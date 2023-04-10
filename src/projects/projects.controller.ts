@@ -69,7 +69,11 @@ export class ProjectsController {
       },
       include: {
         sections: true,
-        tasks: true,
+        tasks: {
+          where: {
+            parentId: null,
+          },
+        },
       },
     });
 
