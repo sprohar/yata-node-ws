@@ -3,7 +3,6 @@ import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { ThrottlerGuard } from '@nestjs/throttler/dist/throttler.guard';
-import { ChronoModule } from './chrono/chrono.module';
 import { IamModule } from './iam/iam.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ProjectsModule } from './projects/projects.module';
@@ -28,7 +27,6 @@ import { UsersModule } from './users/users.module';
     IamModule,
     UsersModule,
     RedisModule,
-    ChronoModule,
   ],
   controllers: [],
   providers: [

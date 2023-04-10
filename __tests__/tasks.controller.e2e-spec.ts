@@ -78,7 +78,7 @@ describe('TasksController', () => {
         expect(res.status).toEqual(HttpStatus.BAD_REQUEST);
       });
 
-      it('should throw BadRequestException when given an invalid date', async () => {
+      it('should throw BadRequestException when given an invalid date (only ISO dates are value)', async () => {
         const createTaskDto: CreateTaskDto = {
           title: 'Task',
           projectId: project.id,
@@ -86,7 +86,7 @@ describe('TasksController', () => {
         };
 
         const req = request(app.getHttpServer())
-          .post(`/projects/${project.id}/tasks`)
+          .post(`/tasks`)
           .send(createTaskDto);
 
         const res = await attachAccessToken(req, accessToken);
@@ -101,7 +101,7 @@ describe('TasksController', () => {
         };
 
         const req = request(app.getHttpServer())
-          .post(`/projects/${project.id}/tasks`)
+          .post(`/tasks`)
           .send(createTaskDto);
 
         const res = await attachAccessToken(req, accessToken);
@@ -116,7 +116,7 @@ describe('TasksController', () => {
           content: ' '.repeat(TaskAttributes.Content.MAX_LENGTH + 1),
         };
         const req = request(app.getHttpServer())
-          .post(`/projects/${project.id}/tasks`)
+          .post(`/tasks`)
           .send(createTaskDto);
 
         const res = await attachAccessToken(req, accessToken);
@@ -132,7 +132,7 @@ describe('TasksController', () => {
       };
 
       const req = request(app.getHttpServer())
-        .post(`/projects/0/tasks`)
+        .post(`/tasks`)
         .send(createTaskDto);
 
       const res = await attachAccessToken(req, accessToken);
@@ -147,7 +147,7 @@ describe('TasksController', () => {
       };
 
       const req = request(app.getHttpServer())
-        .post(`/projects/${project.id}/tasks`)
+        .post(`/tasks`)
         .send(createTaskDto);
 
       const res = await attachAccessToken(req, accessToken);
@@ -176,7 +176,7 @@ describe('TasksController', () => {
         };
 
         const req = request(app.getHttpServer())
-          .post(`/projects/${project.id}/tasks`)
+          .post(`/tasks`)
           .send(createSubtaskDto);
 
         const res = await attachAccessToken(req, accessToken);
@@ -196,7 +196,7 @@ describe('TasksController', () => {
       };
 
       const req = request(app.getHttpServer())
-        .post(`/projects/${project.id}/tasks`)
+        .post(`/tasks`)
         .send(createTaskDto);
 
       const res = await attachAccessToken(req, accessToken);
@@ -206,9 +206,7 @@ describe('TasksController', () => {
 
     it('should throw NotFoundException when a task does not exist', async () => {
       const taskId = 0;
-      const req = request(app.getHttpServer()).get(
-        `/projects/${project.id}/tasks/${taskId}`,
-      );
+      const req = request(app.getHttpServer()).get(`/tasks/${taskId}`);
 
       const res = await attachAccessToken(req, accessToken);
 
@@ -216,9 +214,7 @@ describe('TasksController', () => {
     });
 
     it('should return a Task', async () => {
-      const req = request(app.getHttpServer()).get(
-        `/projects/${project.id}/tasks/${taskId}`,
-      );
+      const req = request(app.getHttpServer()).get(`/tasks/${taskId}`);
 
       const res = await attachAccessToken(req, accessToken);
 
@@ -237,7 +233,7 @@ describe('TasksController', () => {
       };
 
       const req = request(app.getHttpServer())
-        .post(`/projects/${project.id}/tasks`)
+        .post(`/tasks`)
         .send(createTaskDto);
 
       const res = await attachAccessToken(req, accessToken);
@@ -247,18 +243,14 @@ describe('TasksController', () => {
 
     it('should throw NotFoundException when a task does not exist', async () => {
       const taskId = 0;
-      const req = request(app.getHttpServer()).delete(
-        `/projects/${project.id}/tasks/${taskId}`,
-      );
+      const req = request(app.getHttpServer()).delete(`/tasks/${taskId}`);
 
       const res = await attachAccessToken(req, accessToken);
       expect(res.status).toEqual(HttpStatus.NOT_FOUND);
     });
 
     it('should delete a Task', async () => {
-      const req = request(app.getHttpServer()).delete(
-        `/projects/${project.id}/tasks/${taskId}`,
-      );
+      const req = request(app.getHttpServer()).delete(`/tasks/${taskId}`);
 
       const res = await attachAccessToken(req, accessToken);
       expect(res.status).toEqual(HttpStatus.NO_CONTENT);
@@ -287,9 +279,7 @@ describe('TasksController', () => {
 
     it('should throw NotFoundException when a task does not exist', async () => {
       const taskId = 0;
-      const req = request(app.getHttpServer()).patch(
-        `/projects/${project.id}/tasks/${taskId}`,
-      );
+      const req = request(app.getHttpServer()).patch(`/tasks/${taskId}`);
 
       const res = await attachAccessToken(req, accessToken);
       expect(res.status).toEqual(HttpStatus.NOT_FOUND);
@@ -302,7 +292,7 @@ describe('TasksController', () => {
       };
 
       const req = request(app.getHttpServer())
-        .patch(`/projects/${project.id}/tasks/${taskId}`)
+        .patch(`/tasks/${taskId}`)
         .send(updateTaskDto);
 
       const res = await attachAccessToken(req, accessToken);
@@ -332,7 +322,7 @@ describe('TasksController', () => {
     it('should throw BadRequestException when the project does not exist', async () => {
       const taskId = 0;
       const req = request(app.getHttpServer()).post(
-        `/projects/0/tasks/${taskId}/duplicate`,
+        `/tasks/${taskId}/duplicate`,
       );
 
       const res = await attachAccessToken(req, accessToken);
@@ -340,9 +330,7 @@ describe('TasksController', () => {
     });
 
     it('should throw NotFoundException when the task does not exist', async () => {
-      const req = request(app.getHttpServer()).post(
-        `/projects/${project.id}/tasks/0/duplicate`,
-      );
+      const req = request(app.getHttpServer()).post(`/tasks/0/duplicate`);
 
       const res = await attachAccessToken(req, accessToken);
       expect(res.status).toEqual(HttpStatus.NOT_FOUND);
@@ -350,7 +338,7 @@ describe('TasksController', () => {
 
     it('should duplicate a Task', async () => {
       const req = request(app.getHttpServer()).post(
-        `/projects/${project.id}/tasks/${task.id}/duplicate`,
+        `/tasks/${task.id}/duplicate`,
       );
 
       const res = await attachAccessToken(req, accessToken);
