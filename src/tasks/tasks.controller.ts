@@ -141,12 +141,19 @@ export class TasksController {
         userId,
       },
       include: {
-        subtasks: true,
         tags: true,
+        subtasks: {
+          orderBy: {
+            id: Prisma.SortOrder.asc,
+          },
+        },
+      },
+      orderBy: {
+        id: Prisma.SortOrder.asc,
       },
     });
 
-    if (task === null) {
+    if (!task) {
       throw new NotFoundException();
     }
 
@@ -180,7 +187,7 @@ export class TasksController {
   async update(
     @ActiveUser('sub', ParseIntPipe) userId: number,
     @Param('id', ParseIntPipe) taskId: number,
-    @Body() updateTaskDto: UpdateTaskDto,
+    @Body() dto: UpdateTaskDto,
   ) {
     const taskExists = await this.tasksService.exists({
       where: {
@@ -193,20 +200,35 @@ export class TasksController {
       throw new NotFoundException();
     }
 
-    if (updateTaskDto.isCompleted) {
-      updateTaskDto.completedAt = new Date().toISOString();
-    } else if (
-      updateTaskDto.isCompleted !== undefined &&
-      !updateTaskDto.isCompleted
-    ) {
-      updateTaskDto.completedAt = null;
+    if (dto.isCompleted) {
+      dto.completedAt = new Date().toISOString();
+    } else if (dto.isCompleted !== undefined && !dto.isCompleted) {
+      dto.completedAt = null;
     }
+
+    const selectedTags = dto.tags ?? [];
+    delete dto.tags;
+    const newTags = selectedTags.filter((t) => !t.id);
 
     try {
       return await this.tasksService.update({
-        data: updateTaskDto,
+        data: {
+          ...dto,
+          tags: {
+            connect: selectedTags.map((tag) => ({ id: tag.id })),
+            create: newTags,
+          },
+        },
         where: {
           id: taskId,
+        },
+        include: {
+          subtasks: {
+            orderBy: {
+              id: Prisma.SortOrder.asc,
+            },
+          },
+          tags: true,
         },
       });
     } catch (error) {

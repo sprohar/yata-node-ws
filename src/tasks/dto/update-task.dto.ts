@@ -1,5 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Tag } from '@prisma/client';
 import {
+  IsArray,
   IsBoolean,
   IsEnum,
   IsISO8601,
@@ -84,4 +86,9 @@ export class UpdateTaskDto {
   @IsOptional()
   @IsEnum(Priority)
   priority?: Priority;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsArray()
+  tags?: Tag[];
 }
