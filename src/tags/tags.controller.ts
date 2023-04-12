@@ -19,7 +19,7 @@ import { TagsService } from './tags.service';
 
 @Controller('tags')
 export class TagsController {
-  constructor(private readonly tagsService: TagsService) { }
+  constructor(private readonly tagsService: TagsService) {}
 
   @Post()
   async create(
@@ -85,7 +85,7 @@ export class TagsController {
         },
       },
       orderBy: {
-        createdAt: Prisma.SortOrder.asc,
+        id: Prisma.SortOrder.asc,
       },
     });
   }
