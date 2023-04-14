@@ -1,1 +1,0 @@
-CREATE DATABASE yata_test;
