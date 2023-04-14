@@ -41,11 +41,7 @@ docker compose up dev-db --detach
 Ensure that you have an instance of Postgres running on your machine and run the following commands:
 
 ```
-npm run db:push
-```
-
-```
-npm run db:seed
+npm run db:init
 ```
 
 This will create and seed the database.
