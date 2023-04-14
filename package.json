@@ -10,6 +10,7 @@
   },
   "scripts": {
     "prisma:dev:deploy": "prisma migrate deploy",
+    "predb:seed": "prisma db execute --file ./scripts/sql/triggers.sql",
     "db:reset": "prisma migrate reset",
     "db:seed": "prisma db seed",
     "db:dev:rm": "docker compose rm dev-db --stop --force --volumes",
@@ -17,9 +18,6 @@
     "db:dev:restart": "npm run db:dev:rm && npm run db:dev:up && npm run prisma:dev:deploy",
     "prisma:test:deploy": "dotenv -e .env.test -- prisma migrate deploy",
     "db:test:rm": "docker compose rm test-db --stop --force --volumes",
-    "native:db:drop": "npx dotenv -e .env.test -- prisma db execute --file ./scripts/sql/drop-db.sql --schema schema.prisma ",
-    "native:db:create": "npx dotenv -e .env.test -- prisma db execute --file ./scripts/sql/create-db.sql --schema schema.prisma ",
-    "native:db:restart": "npm run native:db:drop && npm run native:db:create",
     "db:test:up": "docker compose up test-db --detach",
     "db:test:restart": "npm run db:test:rm && npm run db:test:up && npm run prisma:test:deploy",
     "db:push": "prisma db push",
