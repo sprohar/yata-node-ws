@@ -14,6 +14,11 @@ import { TaskAttributes } from './task-attributes';
 export class TaskQueryParams {
   @ApiProperty()
   @IsOptional()
+  @IsString()
+  query?: string;
+
+  @ApiProperty()
+  @IsOptional()
   @IsEnum(TaskAttributes.OrderBy)
   orderBy?: TaskAttributes.OrderBy;
 

@@ -14,6 +14,7 @@ import { BadRequestException } from '@nestjs/common/exceptions';
 import { ApiTags } from '@nestjs/swagger/dist/decorators';
 import { Prisma } from '@prisma/client';
 import { QueryParams } from '../dto/query-params.dto';
+import { Public } from '../iam/authentication/decorators';
 import { ActiveUser } from '../iam/decorators/active-user.decorator';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
@@ -54,6 +55,21 @@ export class TasksController {
     } catch (error) {
       throw new BadRequestException();
     }
+  }
+
+  @Get('search')
+  async search(@Query() query: TaskQueryParams) {
+    const prisma = this.tasksService.db();
+    return await prisma.task.findMany({
+      skip: 0,
+      take: 10,
+      where: {
+        title: {
+          mode: Prisma.QueryMode.insensitive,
+          contains: query.query,
+        },
+      },
+    });
   }
 
   @Get()
