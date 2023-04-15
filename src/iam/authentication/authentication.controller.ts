@@ -6,14 +6,14 @@ import {
   ParseIntPipe,
   Post,
   Res,
-  UnauthorizedException
+  UnauthorizedException,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { CookieOptions, Response } from 'express';
 import { ActiveUser, RefreshToken } from '../decorators';
 import { COOKIE_REFRESH_TOKEN_KEY } from '../iam.constants';
 import { AuthenticationService } from './authentication.service';
-import { Auth } from './decorators';
+import { Auth, Public } from './decorators';
 import { SignInDto, SignUpDto } from './dto';
 import { AuthResponseDto } from './dto/auth-response.dto';
 import { AuthType } from './enums';
@@ -24,7 +24,7 @@ const refreshCookieOptions: CookieOptions = {
 };
 
 @ApiTags('Authentication')
-@Auth(AuthType.NONE)
+@Public()
 @Controller('authentication')
 export class AuthenticationController {
   constructor(private authService: AuthenticationService) {}
