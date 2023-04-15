@@ -14,7 +14,6 @@ import { BadRequestException } from '@nestjs/common/exceptions';
 import { ApiTags } from '@nestjs/swagger/dist/decorators';
 import { Prisma } from '@prisma/client';
 import { QueryParams } from '../dto/query-params.dto';
-import { Public } from '../iam/authentication/decorators';
 import { ActiveUser } from '../iam/decorators/active-user.decorator';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
@@ -58,16 +57,24 @@ export class TasksController {
   }
 
   @Get('search')
-  async search(@Query() query: TaskQueryParams) {
+  async search(
+    @ActiveUser('sub', ParseIntPipe) userId: number,
+    @Query() query: TaskQueryParams,
+  ) {
     const prisma = this.tasksService.db();
     return await prisma.task.findMany({
       skip: 0,
       take: 10,
       where: {
+        userId,
+        projectId: query.projectId ? +query.projectId : undefined,
         title: {
           mode: Prisma.QueryMode.insensitive,
-          contains: query.query,
+          startsWith: query.query,
         },
+      },
+      orderBy: {
+        title: Prisma.SortOrder.asc,
       },
     });
   }

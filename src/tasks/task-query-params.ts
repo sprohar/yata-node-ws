@@ -44,7 +44,7 @@ export class TaskQueryParams {
 
   @ApiProperty()
   @IsOptional()
-  @IsNumber()
+  @IsNumberString()
   projectId?: number;
 
   @ApiProperty()
