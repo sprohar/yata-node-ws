@@ -45,9 +45,10 @@ model Task {
   description String?
   content     String?
   priority    Int?      @default(0)
+  sort_order  Int       @default(0) @map("sort_order")
+  isDeleted   Boolean   @default(false) @map("is_deleted")
   isCompleted Boolean   @default(false) @map("is_completed")
   isAllDay    Boolean   @default(true) @map("is_all_day")
-  sortOrder   Int       @default(0) @map("sort_order")
   dueDate     DateTime? @map("due_date") @db.Timestamptz
   startDate   DateTime? @map("start_date") @db.Timestamptz
 
@@ -80,6 +81,7 @@ model Task {
 model Section {
   id        Int     @id @default(autoincrement())
   name      String  @db.VarChar(64)
+  order     Int     @default(0)
   // relations
   tasks     Task[]
   project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)

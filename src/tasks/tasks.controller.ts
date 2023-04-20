@@ -27,6 +27,8 @@ import { TasksService } from './tasks.service';
 export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
+  // TODO: updateMany()
+
   @Post()
   async create(
     @ActiveUser('sub', ParseIntPipe) userId: number,
