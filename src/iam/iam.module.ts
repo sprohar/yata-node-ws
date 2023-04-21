@@ -9,6 +9,8 @@ import { AuthenticationController } from './authentication/authentication.contro
 import { AuthenticationService } from './authentication/authentication.service';
 import { AccessTokenGuard, AuthenticationGuard } from './authentication/guards';
 import { RefreshTokenIdsStorage } from './authentication/refresh-token-ids.storage';
+import { GoogleAuthenticationController } from './authentication/social/google-authentication.controller';
+import { GoogleAuthenticationService } from './authentication/social/google-authentication.service';
 import jwtConfig from './config/jwt.config';
 import { ArgonService } from './hashing/argon.service';
 import { HashingService } from './hashing/hashing.service';
@@ -25,12 +27,14 @@ import { HashingService } from './hashing/hashing.service';
       useClass: ArgonService,
     },
     AuthenticationService,
+    AuthenticationGuard,
     AccessTokenGuard,
     RefreshTokenIdsStorage,
     UsersService,
     RedisService,
+    GoogleAuthenticationService,
   ],
-  controllers: [AuthenticationController],
-  exports: [AuthenticationService],
+  controllers: [AuthenticationController, GoogleAuthenticationController],
+  exports: [AuthenticationService, AccessTokenGuard, AuthenticationGuard],
 })
 export class IamModule {}

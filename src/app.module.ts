@@ -35,15 +35,15 @@ import { UsersModule } from './users/users.module';
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
+    {
+      provide: APP_GUARD,
+      useClass: AuthenticationGuard,
+    },
     // This uses the auth0 middleware to validate the access token issued by Auth0
     // {
     //   provide: APP_GUARD,
     //   useClass: AuthorizationGuard,
     // },
-    {
-      provide: APP_GUARD,
-      useClass: AuthenticationGuard,
-    },
   ],
 })
 export class AppModule {}

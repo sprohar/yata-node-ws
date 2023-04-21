@@ -13,7 +13,8 @@ model User {
   id                 String    @id @default(dbgenerated("gen_random_uuid()")) @map("user_id") @db.Uuid
   email              String    @unique
   emailVerified      Boolean   @default(false) @map("email_verified")
-  password           String
+  password           String?
+  googleId           String?   @map("google_id")
   name               String?
   phoneNumber        String?   @map("phone_number")
   phoneVerified      Boolean   @default(false) @map("phone_verified")
@@ -54,7 +55,7 @@ model Project {
   tasks     Task[]
   sections  Section[]
   User      User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String      @db.Uuid @map("user_id")
+  userId    String      @map("user_id") @db.Uuid
 
   @@index([id, userId])
   @@map("project")
@@ -89,7 +90,7 @@ model Task {
   sectionId Int?     @map("section_id")
   tags      Tag[]
   User      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String   @db.Uuid @map("user_id")
+  userId    String   @map("user_id") @db.Uuid
 
   parentId Int?   @map("parent_id")
   task     Task?  @relation("subtasks", fields: [parentId], references: [id])
@@ -119,7 +120,7 @@ model Tag {
   // relations
   tasks        Task[]
   User         User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId       String  @db.Uuid @map("user_id")
+  userId       String  @map("user_id") @db.Uuid
 
   @@unique([name, userId])
   @@map("tag")

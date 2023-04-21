@@ -55,6 +55,7 @@
     "class-validator": "^0.14.0",
     "cookie-parser": "^1.4.6",
     "express-oauth2-jwt-bearer": "^1.4.1",
+    "google-auth-library": "^8.7.0",
     "helmet": "^6.0.1",
     "ioredis": "^5.3.1",
     "passport": "^0.6.0",
