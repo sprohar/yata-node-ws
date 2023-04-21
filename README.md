@@ -21,10 +21,15 @@ JWT_TOKEN_ISSUER=localhost:3000
 JWT_ACCESS_TOKEN_TTL=1200
 JWT_REFRESH_TOKEN_TTL=86400
 
-APP_PORT=3000
+PORT=3000
 
 REDIS_HOST=localhost
 REDIS_PORT=6379
+
+# These are required if you plan to use Auth0
+ISSUER_BASE_URL=add_your_auth0_domain_here
+AUDIENCE=add_your_auth0_api_url_here
+CLIENT_ORIGIN_URL=http://localhost:4200
 ```
 
 ### Using Docker
