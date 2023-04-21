@@ -3,8 +3,8 @@ import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { ThrottlerGuard } from '@nestjs/throttler/dist/throttler.guard';
-import { AuthorizationGuard } from './authorization/authorization.guard';
-// import { IamModule } from './iam/iam.module';
+import { AuthenticationGuard } from './iam/authentication/guards';
+import { IamModule } from './iam/iam.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ProjectsModule } from './projects/projects.module';
 import { RedisModule } from './redis/redis.module';
@@ -25,7 +25,7 @@ import { UsersModule } from './users/users.module';
     TasksModule,
     SectionsModule,
     TagsModule,
-    // IamModule,
+    IamModule,
     UsersModule,
     RedisModule,
   ],
@@ -35,9 +35,14 @@ import { UsersModule } from './users/users.module';
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
+    // This uses the auth0 middleware to validate the access token issued by Auth0
+    // {
+    //   provide: APP_GUARD,
+    //   useClass: AuthorizationGuard,
+    // },
     {
       provide: APP_GUARD,
-      useClass: AuthorizationGuard,
+      useClass: AuthenticationGuard,
     },
   ],
 })

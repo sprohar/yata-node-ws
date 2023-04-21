@@ -24,15 +24,11 @@ import { HashingService } from './hashing/hashing.service';
       provide: HashingService,
       useClass: ArgonService,
     },
-    {
-      provide: APP_GUARD,
-      useClass: AuthenticationGuard,
-    },
     AuthenticationService,
     AccessTokenGuard,
     RefreshTokenIdsStorage,
     UsersService,
-    RedisService
+    RedisService,
   ],
   controllers: [AuthenticationController],
   exports: [AuthenticationService],

@@ -5,7 +5,6 @@ import {
   InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { Request, Response } from 'express';
 import {
   auth,
