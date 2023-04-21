@@ -56,6 +56,7 @@ model Project {
   User      User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String      @db.Uuid @map("user_id")
 
+  @@index([id, userId])
   @@map("project")
 }
 
@@ -94,6 +95,7 @@ model Task {
   task     Task?  @relation("subtasks", fields: [parentId], references: [id])
   subtasks Task[] @relation("subtasks")
 
+  @@index([id, userId])
   @@index([title])
   @@map("task")
 }

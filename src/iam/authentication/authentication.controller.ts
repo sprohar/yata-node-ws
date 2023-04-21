@@ -3,7 +3,6 @@ import {
   Controller,
   HttpCode,
   HttpStatus,
-  ParseIntPipe,
   Post,
   Res,
   UnauthorizedException,
@@ -41,7 +40,7 @@ export class AuthenticationController {
   @Auth(AuthType.BEARER)
   @HttpCode(HttpStatus.OK)
   async logout(
-    @ActiveUser('sub', ParseIntPipe) userId: number,
+    @ActiveUser('sub') userId: string,
     @Res({ passthrough: true }) res: Response,
   ) {
     await this.authService.logout(userId);

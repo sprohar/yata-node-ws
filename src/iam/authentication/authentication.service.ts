@@ -23,9 +23,9 @@ export class AuthenticationService {
     private refreshTokenIdsStorage: RefreshTokenIdsStorage,
     @Inject(jwtConfig.KEY)
     private readonly jwtConfiguration: ConfigType<typeof jwtConfig>,
-  ) { }
+  ) {}
 
-  async logout(userId: number) {
+  async logout(userId: string) {
     await this.refreshTokenIdsStorage.invalidate(userId);
   }
 
@@ -40,7 +40,7 @@ export class AuthenticationService {
 
       const user = await this.usersService.findOne({
         where: {
-          id: parseInt(tokenPayload.sub),
+          id: tokenPayload.sub,
         },
         select: {
           id: true,
@@ -77,7 +77,7 @@ export class AuthenticationService {
     try {
       const user = await this.usersService.create({
         email: signUpDto.email,
-        pwd: await this.hashingService.hash(signUpDto.password),
+        password: await this.hashingService.hash(signUpDto.password),
       });
 
       const { accessToken, refreshToken } = await this.generateTokens(
@@ -111,14 +111,14 @@ export class AuthenticationService {
 
     const isEqual = await this.hashingService.compare(
       signInDto.password,
-      user.pwd,
+      user.password,
     );
 
     if (!isEqual) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    delete user.pwd;
+    delete user.password;
     // create tokens in parallel
     const { accessToken, refreshToken } = await this.generateTokens(user);
     return {
@@ -147,7 +147,7 @@ export class AuthenticationService {
     return { accessToken, refreshToken };
   }
 
-  private async signToken<T>(userId: number, expiresIn: number, payload?: T) {
+  private async signToken<T>(userId: string, expiresIn: number, payload?: T) {
     return await this.jwtService.signAsync(
       {
         sub: userId,

@@ -26,7 +26,7 @@ export class ProjectsController {
 
   @Post()
   async create(
-    @ActiveUser('sub', ParseIntPipe) userId: number,
+    @ActiveUser('sub') userId: string,
     @Body() createProjectDto: CreateProjectDto,
   ) {
     return await this.projectsService.create({
@@ -39,7 +39,7 @@ export class ProjectsController {
 
   @Get()
   async findAll(
-    @ActiveUser('sub', ParseIntPipe) userId: number,
+    @ActiveUser('sub') userId: string,
     @Query() query: ProjectsQueryParams,
   ) {
     const { skip, take } = query;
@@ -57,7 +57,7 @@ export class ProjectsController {
 
   @Get(':id')
   async findOne(
-    @ActiveUser('sub', ParseIntPipe) userId: number,
+    @ActiveUser('sub') userId: string,
     @Param('id', ParseIntPipe) id: number,
   ) {
     const project = await this.projectsService.findOne({
@@ -84,7 +84,7 @@ export class ProjectsController {
 
   @Patch(':id')
   async update(
-    @ActiveUser('sub', ParseIntPipe) userId: number,
+    @ActiveUser('sub') userId: string,
     @Param('id', ParseIntPipe) id: number,
     @Body() updateProjectDto: UpdateProjectDto,
   ) {
@@ -109,7 +109,7 @@ export class ProjectsController {
 
   @Delete(':id')
   async remove(
-    @ActiveUser('sub', ParseIntPipe) userId: number,
+    @ActiveUser('sub') userId: string,
     @Param('id', ParseIntPipe) id: number,
   ) {
     const projectExists = await this.projectsService.exists({

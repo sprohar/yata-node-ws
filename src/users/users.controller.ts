@@ -1,18 +1,15 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
-  ParseIntPipe,
-  NotFoundException,
+  Get,
+  Param,
+  Patch,
+  Post,
 } from '@nestjs/common';
-import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { ActiveUser } from '../iam/decorators';
+import { UsersService } from './users.service';
 
 @Controller('users')
 export class UsersController {
@@ -28,30 +25,28 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
-  @Get(':id')
-  async findOne(
-    @ActiveUser('sub') sub: string,
-    @Param('id', ParseIntPipe) id: number,
-  ) {
-    console.log(sub);
-    console.log(id);
-    try {
-      return await this.usersService.findOne({
-        where: {
-          id,
-        },
-        select: {
-          id: true,
-          email: true,
-          username: true,
-          createdAt: true,
-          updatedAt: true,
-        },
-      });
-    } catch (error) {
-      throw new NotFoundException();
-    }
-  }
+  // @Get(':id')
+  // async findOne(
+  //   @ActiveUser('sub') sub: string,
+  //   @Param('id') userId: string,
+  // ) {
+  //   try {
+  //     return await this.usersService.findOne({
+  //       where: {
+  //         userId,
+  //       },
+  //       select: {
+  //         id: true,
+  //         email: true,
+  //         username: true,
+  //         createdAt: true,
+  //         updatedAt: true,
+  //       },
+  //     });
+  //   } catch (error) {
+  //     throw new NotFoundException();
+  //   }
+  // }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {

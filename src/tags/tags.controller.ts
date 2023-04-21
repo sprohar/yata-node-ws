@@ -23,7 +23,7 @@ export class TagsController {
 
   @Post()
   async create(
-    @ActiveUser('sub', ParseIntPipe) userId: number,
+    @ActiveUser('sub') userId: string,
     @Body() createTagDto: CreateTagDto,
   ) {
     return await this.tagsService.create({
@@ -36,7 +36,7 @@ export class TagsController {
 
   @Get()
   async findAll(
-    @ActiveUser('sub', ParseIntPipe) userId: number,
+    @ActiveUser('sub') userId: string,
     @Query() query: QueryParams,
   ) {
     const { skip, take } = query;
@@ -54,7 +54,7 @@ export class TagsController {
 
   @Get(':id')
   async findOne(
-    @ActiveUser('sub', ParseIntPipe) userId: number,
+    @ActiveUser('sub') userId: string,
     @Param('id', ParseIntPipe) id: number,
   ) {
     return await this.tagsService.findOne({
@@ -67,7 +67,7 @@ export class TagsController {
 
   @Get(':id/tasks')
   async getTasks(
-    @ActiveUser('sub', ParseIntPipe) userId: number,
+    @ActiveUser('sub') userId: string,
     @Param('id', ParseIntPipe) tagId: number,
     @Query() query: QueryParams,
   ) {
@@ -92,7 +92,7 @@ export class TagsController {
 
   @Patch(':id')
   async update(
-    @ActiveUser('sub', ParseIntPipe) userId: number,
+    @ActiveUser('sub') userId: string,
     @Param('id', ParseIntPipe) id: number,
     @Body() updateTagDto: UpdateTagDto,
   ) {
@@ -118,7 +118,7 @@ export class TagsController {
 
   @Delete(':id')
   async remove(
-    @ActiveUser('sub', ParseIntPipe) userId: number,
+    @ActiveUser('sub') userId: string,
     @Param('id', ParseIntPipe) id: number,
   ) {
     const tagExists = await this.tagsService.exists({

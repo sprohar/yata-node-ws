@@ -8,5 +8,5 @@ export class CreateUserDto {
 
   @IsNotEmpty()
   @MinLength(User.Password.MinLength)
-  pwd: string;
+  password: string;
 }

@@ -30,11 +30,11 @@ function getDueDates() {
 
 async function main() {
   const { dayAfterTomorrow, nextWeek, today, tomorrow } = getDueDates();
-  const pwd = await argon.hash('password');
+  const password = await argon.hash('password');
   const user = await prisma.user.create({
     data: {
       email: 'testuser@yata.app',
-      pwd,
+      password,
     },
   });
 

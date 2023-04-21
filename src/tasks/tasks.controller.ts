@@ -31,7 +31,7 @@ export class TasksController {
 
   @Post()
   async create(
-    @ActiveUser('sub', ParseIntPipe) userId: number,
+    @ActiveUser('sub') userId: string,
     @Body() createTaskDto: CreateTaskDto,
   ) {
     const selectedTags = createTaskDto.tags ?? [];
@@ -60,7 +60,7 @@ export class TasksController {
 
   @Get('search')
   async search(
-    @ActiveUser('sub', ParseIntPipe) userId: number,
+    @ActiveUser('sub') userId: string,
     @Query() query: TaskQueryParams,
   ) {
     const prisma = this.tasksService.db();
@@ -83,7 +83,7 @@ export class TasksController {
 
   @Get()
   async getAll(
-    @ActiveUser('sub', ParseIntPipe) userId: number,
+    @ActiveUser('sub') userId: string,
     @Query() query: TaskQueryParams,
   ) {
     const orderBy: Prisma.TaskOrderByWithRelationInput = {
@@ -157,7 +157,7 @@ export class TasksController {
 
   @Get(':id')
   async findOne(
-    @ActiveUser('sub', ParseIntPipe) userId: number,
+    @ActiveUser('sub') userId: string,
     @Param('id', ParseIntPipe) id: number,
   ) {
     const task = await this.tasksService.findOne({
@@ -187,7 +187,7 @@ export class TasksController {
 
   @Post(':id/duplicate')
   async duplicate(
-    @ActiveUser('sub', ParseIntPipe) userId: number,
+    @ActiveUser('sub') userId: string,
     @Param('id', ParseIntPipe) taskId: number,
   ) {
     const taskExists = await this.tasksService.exists({
@@ -210,7 +210,7 @@ export class TasksController {
 
   @Patch(':id')
   async update(
-    @ActiveUser('sub', ParseIntPipe) userId: number,
+    @ActiveUser('sub') userId: string,
     @Param('id', ParseIntPipe) taskId: number,
     @Body() dto: UpdateTaskDto,
   ) {
@@ -291,7 +291,7 @@ export class TasksController {
 
   @Delete(':id')
   async remove(
-    @ActiveUser('sub', ParseIntPipe) userId: number,
+    @ActiveUser('sub') userId: string,
     @Param('id', ParseIntPipe) id: number,
   ) {
     const taskExists = await this.tasksService.exists({
