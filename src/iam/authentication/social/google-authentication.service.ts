@@ -5,6 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { User } from '@prisma/client';
 import { OAuth2Client } from 'google-auth-library';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { AuthenticationService } from '../authentication.service';
@@ -34,10 +35,11 @@ export class GoogleAuthenticationService implements OnModuleInit {
       const { email, sub: googleId } = loginTicket.getPayload();
       const user = await this.prisma.user.findFirst({
         where: { googleId },
+        select: { id: true, email: true, loginsCount: true },
       });
 
       if (user) {
-        await this.prisma.user.update({
+        const updatedUser = await this.prisma.user.update({
           where: {
             id: user.id,
           },
@@ -45,9 +47,21 @@ export class GoogleAuthenticationService implements OnModuleInit {
             loginsCount: user.loginsCount + 1,
             lastLogin: new Date().toISOString(),
           },
+          select: {
+            id: true,
+            email: true,
+            createdAt: true,
+            updatedAt: true,
+            loginsCount: true,
+            lastLogin: true,
+          },
         });
 
-        return this.authService.generateTokens(user);
+        const result = await this.authService.generateTokens(user as User);
+        return {
+          user: updatedUser,
+          ...result,
+        };
       }
 
       const newUser = await this.prisma.user.create({
@@ -56,9 +70,21 @@ export class GoogleAuthenticationService implements OnModuleInit {
           googleId,
           lastLogin: new Date().toISOString(),
         },
+        select: {
+          id: true,
+          email: true,
+          createdAt: true,
+          updatedAt: true,
+          loginsCount: true,
+          lastLogin: true,
+        },
       });
 
-      return this.authService.generateTokens(newUser);
+      const result = await this.authService.generateTokens(newUser as User);
+      return {
+        user: newUser,
+        ...result,
+      };
     } catch (err) {
       const pgUniqueViolationErrorCode = '23505';
       if (err.code === pgUniqueViolationErrorCode) {

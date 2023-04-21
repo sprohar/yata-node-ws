@@ -8,7 +8,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { CookieOptions, Response } from 'express';
+import { Response } from 'express';
 import { ActiveUser, RefreshToken } from '../decorators';
 import { COOKIE_REFRESH_TOKEN_KEY } from '../iam.constants';
 import { AuthenticationService } from './authentication.service';
@@ -16,11 +16,7 @@ import { Auth, Public } from './decorators';
 import { SignInDto, SignUpDto } from './dto';
 import { AuthResponseDto } from './dto/auth-response.dto';
 import { AuthType } from './enums';
-
-const refreshCookieOptions: CookieOptions = {
-  httpOnly: true,
-  sameSite: 'lax',
-};
+import { authCookieOptions } from '../iam.constants';
 
 @ApiTags('Authentication')
 @Public()
@@ -29,11 +25,11 @@ export class AuthenticationController {
   constructor(private authService: AuthenticationService) {}
 
   private clearRefreshCookie(res: Response) {
-    res.clearCookie(COOKIE_REFRESH_TOKEN_KEY, refreshCookieOptions);
+    res.clearCookie(COOKIE_REFRESH_TOKEN_KEY, authCookieOptions);
   }
 
   private putRefreshTokenInCookieJar(res: Response, token: string) {
-    res.cookie(COOKIE_REFRESH_TOKEN_KEY, token, refreshCookieOptions);
+    res.cookie(COOKIE_REFRESH_TOKEN_KEY, token, authCookieOptions);
   }
 
   @Post('logout')
