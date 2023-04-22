@@ -7,6 +7,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { User } from '@prisma/client';
 import { OAuth2Client } from 'google-auth-library';
+import { PgErrorCode } from '../../../enums';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { AuthenticationService } from '../authentication.service';
 
@@ -32,7 +33,7 @@ export class GoogleAuthenticationService implements OnModuleInit {
         idToken: token,
       });
 
-      const { email, sub: googleId } = loginTicket.getPayload();
+      const { email, sub: googleId, picture, name } = loginTicket.getPayload();
       const user = await this.prisma.user.findFirst({
         where: { googleId },
         select: { id: true, email: true, loginsCount: true },
@@ -54,6 +55,8 @@ export class GoogleAuthenticationService implements OnModuleInit {
             updatedAt: true,
             loginsCount: true,
             lastLogin: true,
+            picture: true,
+            name: true,
           },
         });
 
@@ -68,6 +71,8 @@ export class GoogleAuthenticationService implements OnModuleInit {
         data: {
           email,
           googleId,
+          name,
+          picture,
           lastLogin: new Date().toISOString(),
         },
         select: {
@@ -86,8 +91,7 @@ export class GoogleAuthenticationService implements OnModuleInit {
         ...result,
       };
     } catch (err) {
-      const pgUniqueViolationErrorCode = '23505';
-      if (err.code === pgUniqueViolationErrorCode) {
+      if (err.code === PgErrorCode.UniqueValidation) {
         throw new ConflictException();
       }
       throw new UnauthorizedException();
