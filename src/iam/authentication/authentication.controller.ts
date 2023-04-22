@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
-import { ActiveUser, RefreshToken } from '../decorators';
+import { ActiveUser } from '../decorators';
 import { COOKIE_REFRESH_TOKEN_KEY } from '../iam.constants';
 import { AuthenticationService } from './authentication.service';
 import { Auth, Public } from './decorators';
@@ -17,20 +17,13 @@ import { SignInDto, SignUpDto } from './dto';
 import { AuthResponseDto } from './dto/auth-response.dto';
 import { AuthType } from './enums';
 import { authCookieOptions } from '../iam.constants';
+import { Cookies } from '../../decorators/cookies.decorator';
 
 @ApiTags('Authentication')
 @Public()
 @Controller('authentication')
 export class AuthenticationController {
   constructor(private authService: AuthenticationService) {}
-
-  private clearRefreshCookie(res: Response) {
-    res.clearCookie(COOKIE_REFRESH_TOKEN_KEY, authCookieOptions);
-  }
-
-  private putRefreshTokenInCookieJar(res: Response, token: string) {
-    res.cookie(COOKIE_REFRESH_TOKEN_KEY, token, authCookieOptions);
-  }
 
   @Post('logout')
   @Auth(AuthType.BEARER)
@@ -40,22 +33,31 @@ export class AuthenticationController {
     @Res({ passthrough: true }) res: Response,
   ) {
     await this.authService.logout(userId);
-    this.clearRefreshCookie(res);
+    res.clearCookie(COOKIE_REFRESH_TOKEN_KEY, authCookieOptions);
     return HttpStatus.OK;
   }
 
   @Post('refresh-tokens')
   @HttpCode(HttpStatus.OK)
   async refreshTokens(
-    @RefreshToken() refreshToken: string,
+    @Cookies(COOKIE_REFRESH_TOKEN_KEY) refreshToken: string,
     @Res({ passthrough: true }) res: Response,
   ) {
     if (!refreshToken) {
+      console.error('Unable to pick the token from the cookie jar');
       throw new UnauthorizedException();
     }
 
+    res.clearCookie(COOKIE_REFRESH_TOKEN_KEY, authCookieOptions);
+
     const authServiceRes = await this.authService.refreshTokens(refreshToken);
-    this.putRefreshTokenInCookieJar(res, authServiceRes.refreshToken);
+
+    res.cookie(
+      COOKIE_REFRESH_TOKEN_KEY,
+      authServiceRes.refreshToken,
+      authCookieOptions,
+    );
+
     return {
       accessToken: authServiceRes.accessToken,
       user: authServiceRes.user,
@@ -72,7 +74,7 @@ export class AuthenticationController {
       dto,
     );
 
-    this.putRefreshTokenInCookieJar(res, refreshToken);
+    res.cookie(COOKIE_REFRESH_TOKEN_KEY, refreshToken, authCookieOptions);
 
     const authResponseDto: AuthResponseDto = { accessToken, user };
     return authResponseDto;
@@ -88,7 +90,7 @@ export class AuthenticationController {
       dto,
     );
 
-    this.putRefreshTokenInCookieJar(res, refreshToken);
+    res.cookie(COOKIE_REFRESH_TOKEN_KEY, refreshToken, authCookieOptions);
 
     const authResponseDto: AuthResponseDto = { accessToken, user };
     return authResponseDto;
