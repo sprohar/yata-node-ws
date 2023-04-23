@@ -44,8 +44,7 @@ export class AuthenticationController {
     @Res({ passthrough: true }) res: Response,
   ) {
     if (!refreshToken) {
-      console.error('Unable to pick the token from the cookie jar');
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('No token');
     }
 
     res.clearCookie(COOKIE_REFRESH_TOKEN_KEY, authCookieOptions);
