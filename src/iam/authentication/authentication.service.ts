@@ -5,6 +5,8 @@ import { User } from '@prisma/client';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { randomUUID } from 'crypto';
 import { PrismaClientErrorCode } from '../../prisma/enums/prisma-client-error-code.enum';
+import { TaskView } from '../../users/enums';
+import { UserPreference } from '../../users/interfaces/';
 import { UsersService } from '../../users/users.service';
 import { ActiveUserData } from '../active-user-data';
 import jwtConfig from '../config/jwt.config';
@@ -46,6 +48,7 @@ export class AuthenticationService {
           id: true,
           email: true,
           username: true,
+          preferences: true,
           createdAt: true,
           updatedAt: true,
         },
@@ -76,13 +79,24 @@ export class AuthenticationService {
   async signUp(signUpDto: SignUpDto) {
     try {
       const user = await this.usersService.create({
-        email: signUpDto.email,
-        password: await this.hashingService.hash(signUpDto.password),
+        data: {
+          email: signUpDto.email,
+          password: await this.hashingService.hash(signUpDto.password),
+          preferences: {
+            taskView: TaskView.MINIMALIST,
+          },
+        },
+        select: {
+          id: true,
+          email: true,
+          createdAt: true,
+        },
       });
 
       const { accessToken, refreshToken } = await this.generateTokens(
         user as User,
       );
+
       return {
         accessToken,
         refreshToken,
