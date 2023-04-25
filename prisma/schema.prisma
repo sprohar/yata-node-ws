@@ -32,6 +32,7 @@ model User {
   lastLogin          DateTime? @map("last_login") @db.Timestamptz
   lastPasswordReset  DateTime? @map("last_password_reset") @db.Timestamptz
   loginsCount        Int       @default(1) @map("logins_count")
+  preferences        Json?
 
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
   updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz
