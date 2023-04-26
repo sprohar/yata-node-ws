@@ -17,7 +17,7 @@ import { UsersModule } from './users/users.module';
   imports: [
     ConfigModule.forRoot(),
     ThrottlerModule.forRoot({
-      ttl: 60,
+      ttl: 10,
       limit: 10,
     }),
     ProjectsModule,
