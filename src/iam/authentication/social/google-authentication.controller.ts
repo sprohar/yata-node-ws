@@ -10,7 +10,7 @@ import { GoogleAuthenticationService } from './google-authentication.service';
 import { GoogleOAuthDto } from './google-oauth.dto';
 
 @Public()
-@Controller('authentication/google')
+@Controller('auth/google')
 export class GoogleAuthenticationController {
   constructor(
     private readonly googleAuthService: GoogleAuthenticationService,

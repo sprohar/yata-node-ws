@@ -43,7 +43,7 @@ describe('TasksController', () => {
     };
 
     const res = await request(app.getHttpServer())
-      .post('/authentication/sign-up')
+      .post('/auth/sign-up')
       .send(signUpDto);
 
     accessToken = res.body.accessToken;

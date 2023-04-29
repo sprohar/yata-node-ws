@@ -21,7 +21,7 @@ import { Cookies } from '../../decorators/cookies.decorator';
 
 @ApiTags('Authentication')
 @Public()
-@Controller('authentication')
+@Controller('auth')
 export class AuthenticationController {
   constructor(private authService: AuthenticationService) {}
 

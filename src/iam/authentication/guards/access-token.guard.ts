@@ -8,6 +8,7 @@ import {
 import { ConfigType } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
+import { TokenExpiredError } from 'jsonwebtoken';
 import jwtConfig from '../../config/jwt.config';
 import { REQUEST_USER_KEY } from '../../iam.constants';
 
@@ -34,6 +35,9 @@ export class AccessTokenGuard implements CanActivate {
       request[REQUEST_USER_KEY] = payload;
     } catch (error) {
       console.error(error);
+      if (error instanceof TokenExpiredError) {
+        throw new UnauthorizedException(error.message);
+      }
       throw new UnauthorizedException();
     }
 
