@@ -29,18 +29,15 @@ model User {
   lastIp             String?   @map("last_ip")
   multifactor        String?
   multifactorUpdated DateTime? @map("multifactor_updated")
-  lastLogin          DateTime? @map("last_login") @db.Timestamptz
-  lastPasswordReset  DateTime? @map("last_password_reset") @db.Timestamptz
+  lastLogin          DateTime? @map("last_login") @db.Timestamptz(6)
+  lastPasswordReset  DateTime? @map("last_password_reset") @db.Timestamptz(6)
   loginsCount        Int       @default(1) @map("logins_count")
   preferences        Json?
-
-  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz
-
-  // relations
-  projects Project[]
-  tasks    Task[]
-  tags     Tag[]
+  createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime? @updatedAt @map("updated_at") @db.Timestamptz(6)
+  projects           Project[]
+  tags               Tag[]
+  tasks              Task[]
 
   @@map("users")
 }
@@ -50,16 +47,15 @@ model Project {
   name      String      @db.VarChar(64)
   important Boolean     @default(false)
   view      ProjectView @default(LIST) @map("view")
-  createdAt DateTime    @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt DateTime?   @updatedAt @map("updated_at") @db.Timestamptz
-  // relations
-  tasks     Task[]
-  sections  Section[]
-  User      User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime?   @updatedAt @map("updated_at") @db.Timestamptz(6)
   userId    String      @map("user_id") @db.Uuid
+  User      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sections  Section[]
+  tasks     Task[]
 
   @@index([id, userId])
-  @@map("project")
+  @@map("projects")
 }
 
 model Task {
@@ -68,63 +64,54 @@ model Task {
   description String?
   content     String?
   priority    Int?      @default(0)
-  sort_order  Int       @default(0) @map("sort_order")
+  order       Int       @default(0) @map("order")
   isDeleted   Boolean   @default(false) @map("is_deleted")
   isCompleted Boolean   @default(false) @map("is_completed")
   isAllDay    Boolean   @default(true) @map("is_all_day")
-  dueDate     DateTime? @map("due_date") @db.Timestamptz
-  startDate   DateTime? @map("start_date") @db.Timestamptz
-
-  // recurrence
-  rruleSet String? @map("rrule_set") @db.VarChar(1024)
-  rrule    String? @map("rrule") @db.VarChar(1024)
-
-  // timestamps
-  completedAt DateTime? @map("completed_at") @db.Timestamptz
-  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt   DateTime? @updatedAt @map("updated_at") @db.Timestamptz
-
-  // relations
-  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  projectId Int      @map("project_id")
-  section   Section? @relation(fields: [sectionId], references: [id], onDelete: Cascade)
-  sectionId Int?     @map("section_id")
-  tags      Tag[]
-  User      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String   @map("user_id") @db.Uuid
-
-  parentId Int?   @map("parent_id")
-  task     Task?  @relation("subtasks", fields: [parentId], references: [id])
-  subtasks Task[] @relation("subtasks")
+  dueDate     DateTime? @map("due_date") @db.Timestamptz(6)
+  startDate   DateTime? @map("start_date") @db.Timestamptz(6)
+  rruleSet    String?   @map("rrule_set") @db.VarChar(1024)
+  rrule       String?   @map("rrule") @db.VarChar(1024)
+  completedAt DateTime? @map("completed_at") @db.Timestamptz(6)
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime? @updatedAt @map("updated_at") @db.Timestamptz(6)
+  projectId   Int       @map("project_id")
+  sectionId   Int?      @map("section_id")
+  userId      String    @map("user_id") @db.Uuid
+  parentId    Int?      @map("parent_id")
+  task        Task?     @relation("subtasks", fields: [parentId], references: [id])
+  subtasks    Task[]    @relation("subtasks")
+  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  section     Section?  @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  User        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tags        Tag[]     @relation("TagToTask")
 
   @@index([id, userId])
   @@index([title])
-  @@map("task")
+  @@map("tasks")
 }
 
 model Section {
   id        Int     @id @default(autoincrement())
   name      String  @db.VarChar(64)
   order     Int     @default(0)
-  // relations
-  tasks     Task[]
-  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId Int     @map("project_id")
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tasks     Task[]
 
-  @@map("section")
+  @@map("sections")
 }
 
 model Tag {
   id           Int     @id @default(autoincrement())
   name         String  @db.VarChar(32)
   colorHexCode String? @db.VarChar(8)
-  // relations
-  tasks        Task[]
-  User         User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId       String  @map("user_id") @db.Uuid
+  User         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tasks        Task[]  @relation("TagToTask")
 
   @@unique([name, userId])
-  @@map("tag")
+  @@map("tags")
 }
 
 enum ProjectView {
