@@ -6,26 +6,40 @@ import * as cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
 
-// function checkEnvironment(configService: ConfigService) {
-//   const requiredEnvVars = [
-//     'APP_PORT',
-//     'CLIENT_ORIGIN_URL',
-//     'ISSUER_BASE_URL',
-//     'AUDIENCE',
-//   ];
-//
-//   requiredEnvVars.forEach((envVar) => {
-//     if (!configService.get<string>(envVar)) {
-//       throw Error(`Undefined environment variable: ${envVar}`);
-//     }
-//   });
-// }
+function checkEnvironment(configService: ConfigService) {
+  const requiredEnvVars = [
+    'DATABASE_URL',
+    'JWT_SECRET',
+    'JWT_TOKEN_AUDIENCE',
+    'JWT_TOKEN_ISSUER',
+    'JWT_ACCESS_TOKEN_TTL',
+    'JWT_REFRESH_TOKEN_TTL',
+    'REDIS_HOST',
+    'REDIS_PORT',
+    'REDIS_PASSWORD',
+    'REDIS_USER',
+    'PORT',
+    'CLIENT_ORIGIN_URL',
+    // Auth0
+    // 'ISSUER_BASE_URL',
+    // 'AUDIENCE',
+    // Google oauth
+    'GOOGLE_CLIENT_ID',
+    'GOOGLE_CLIENT_SECRET',
+  ];
+
+  requiredEnvVars.forEach((envVar) => {
+    if (!configService.get<string>(envVar)) {
+      throw Error(`Undefined environment variable: ${envVar}`);
+    }
+  });
+}
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get<ConfigService>(ConfigService);
 
-  // checkEnvironment(configService);
+  checkEnvironment(configService);
   // app.use(nocache());
 
   app.setGlobalPrefix('api');
@@ -67,8 +81,7 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
-
+  SwaggerModule.setup('doc', app, document);
   await app.listen(configService.get<string>('PORT'));
 }
 bootstrap();

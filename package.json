@@ -16,7 +16,7 @@
     "db:init": "npm run db:push && npm run db:triggers",
     "db:dev:rm": "docker compose rm dev-db --stop --force --volumes",
     "db:dev:up": "docker compose up dev-db --detach",
-    "db:dev:restart": "npm run db:dev:rm && npm run db:dev:up && npm run prisma:dev:deploy",
+    "db:dev:restart": "npm run db:dev:rm && npm run db:dev:up && npm run db:init",
     "prisma:test:deploy": "dotenv -e .env.test -- prisma migrate deploy",
     "db:test:rm": "docker compose rm test-db --stop --force --volumes",
     "db:test:up": "docker compose up test-db --detach",

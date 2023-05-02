@@ -8,6 +8,8 @@ export class RedisService extends Redis implements OnApplicationShutdown {
     super({
       host: config.get('REDIS_HOST') ?? 'localhost',
       port: parseInt(config.get('REDIS_PORT') ?? '6379'),
+      password: config.get<string>('REDIS_PASSWORD'),
+      username: config.get<string>('REDIS_USER'),
     });
   }
 

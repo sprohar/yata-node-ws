@@ -2,6 +2,7 @@
 .env.test
 .vscode/
 .idea/
+.app.*.yaml
 *.rdb
 
 # compiled output
