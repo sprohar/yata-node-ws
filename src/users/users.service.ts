@@ -10,6 +10,10 @@ export class UsersService {
     return await this.prisma.user.create(args);
   }
 
+  delete(args: Prisma.UserDeleteArgs) {
+    return this.prisma.user.delete(args);
+  }
+
   async findOne(args: Prisma.UserFindUniqueArgs) {
     return await this.prisma.user.findUnique(args);
   }

@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { RedisService } from '../redis/redis.service';
 import { UsersModule } from '../users/users.module';
 import { UsersService } from '../users/users.service';
+import { AccountsController } from './accounts.controller';
 import { AuthenticationController } from './authentication/authentication.controller';
 import { AuthenticationService } from './authentication/authentication.service';
 import { AccessTokenGuard, AuthenticationGuard } from './authentication/guards';
@@ -34,7 +34,11 @@ import { HashingService } from './hashing/hashing.service';
     RedisService,
     GoogleAuthenticationService,
   ],
-  controllers: [AuthenticationController, GoogleAuthenticationController],
+  controllers: [
+    AccountsController,
+    AuthenticationController,
+    GoogleAuthenticationController,
+  ],
   exports: [AuthenticationService, AccessTokenGuard, AuthenticationGuard],
 })
 export class IamModule {}
