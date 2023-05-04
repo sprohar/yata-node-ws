@@ -1,13 +1,29 @@
 version: '3.9'
 services:
+  api:
+    build:
+      dockerfile: Dockerfile
+      context: .
+      # Only will build development stage from our dockerfile
+      target: development
+    volumes:
+      - yata:/usr/src/app
+    env_file:
+      - .env
+    # Run a command against the development stage of the image
+    command: npm run start:dev
+    ports:
+      - 3000:3000
+    depends_on:
+      - redis
   dev-db:
     image: postgres:15
     restart: always
     ports:
       - 5434:5432
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password_123
+      POSTGRES_USER: $POSTGRES_USER
+      POSTGRES_PASSWORD: $POSTGRES_PASSWORD
       POSTGRES_DB: yata
     networks:
       - yata
@@ -16,15 +32,22 @@ services:
     ports:
       - 5435:5432
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password_123
+      POSTGRES_USER: $POSTGRES_USER
+      POSTGRES_PASSWORD: $POSTGRES_PASSWORD
       POSTGRES_DB: yata
     networks:
       - yata
   redis:
     image: redis
-    restart: always
+    restart: unless-stopped
     ports:
       - 6379:6379
+    volumes:
+      - redis:/data
 networks:
   yata:
+volumes:
+  yata:
+    external: true
+  redis:
+    driver: local

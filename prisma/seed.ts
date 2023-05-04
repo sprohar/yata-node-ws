@@ -1,6 +1,7 @@
 import { PrismaClient, Section } from '@prisma/client';
 import { ArgonService } from '../src/iam/hashing/argon.service';
 import { Priority } from '../src/tasks/enum/priority.enum';
+import { TaskView } from '../src/users/enums';
 
 const prisma = new PrismaClient();
 const argon = new ArgonService();
@@ -35,7 +36,21 @@ async function main() {
     data: {
       email: 'testuser@yata.app',
       password,
+      preferences: {
+        isDarkTheme: true,
+        defaultDueDateToday: true,
+        taskView: TaskView.MINIMALIST,
+      },
     },
+  });
+
+  await prisma.project.createMany({
+    data: [
+      { name: 'Inbox', userId: user.id },
+      { name: 'Work', userId: user.id },
+      { name: 'Personal', userId: user.id },
+      { name: 'Shopping List', userId: user.id },
+    ],
   });
 
   const projectYataApi = await prisma.project.create({
