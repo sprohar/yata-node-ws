@@ -610,15 +610,15 @@ describe('TasksController', () => {
       expect(res.body.data.length).toEqual(0);
     });
 
-    it('should return a paginated list of today\'s tasks using "from" and "to"', async () => {
-      const from = new Date();
-      from.setHours(0, 0, 0, 0);
+    it('should return a paginated list of today\'s tasks using "gte" and "lte"', async () => {
+      const lowerBound = new Date();
+      lowerBound.setHours(0, 0, 0, 0);
 
-      const to = new Date(from);
-      to.setHours(23, 59, 59, 999);
+      const upperBound = new Date(lowerBound);
+      upperBound.setHours(23, 59, 59, 999);
 
       const req = request(app.getHttpServer()).get(
-        `/tasks?from=${from.getTime()}&to=${to.getTime()}`,
+        `/tasks?gte=${lowerBound.getTime()}&lte=${upperBound.getTime()}`,
       );
 
       const res = await attachAccessToken(req, accessToken);
