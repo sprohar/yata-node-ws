@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client';
 import {
   IsDateString,
   IsEnum,
+  IsISO8601,
   IsNumber,
   IsNumberString,
   IsOptional,
@@ -44,7 +45,7 @@ export class TaskQueryParams {
 
   @ApiProperty()
   @IsOptional()
-  @IsNumberString()
+  @IsNumber()
   projectId?: number;
 
   @ApiProperty()
@@ -64,11 +65,27 @@ export class TaskQueryParams {
 
   @ApiProperty()
   @IsOptional()
-  @IsNumberString()
-  from?: number;
+  @IsISO8601()
+  lt?: Date;
+
+  @ApiProperty({
+    description:
+      'If for some reason this property and lt are given, this takes priority',
+  })
+  @IsOptional()
+  @IsISO8601()
+  lte?: Date;
 
   @ApiProperty()
   @IsOptional()
-  @IsNumberString()
-  to?: number;
+  @IsISO8601()
+  gt?: Date;
+
+  @ApiProperty({
+    description:
+      'If for some reason this property and gt are given, this takes priority',
+  })
+  @IsOptional()
+  @IsISO8601()
+  gte?: Date;
 }

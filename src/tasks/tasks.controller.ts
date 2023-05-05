@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Logger,
   NotFoundException,
   Param,
   ParseIntPipe,
@@ -25,6 +26,8 @@ import { TasksService } from './tasks.service';
 @ApiTags('Tasks')
 @Controller('tasks')
 export class TasksController {
+  private readonly logger = new Logger(TasksController.name);
+
   constructor(private readonly tasksService: TasksService) {}
 
   // TODO: updateMany()
@@ -111,7 +114,6 @@ export class TasksController {
       };
     }
 
-    // date strings are in ISO format & take precedence over numeric timestamps
     if (query.startDate || query.endDate) {
       if (query.startDate && query.endDate) {
         where.dueDate = {
@@ -127,23 +129,39 @@ export class TasksController {
           lte: query.endDate,
         };
       }
-    } else if (query.from || query.to) {
-      const from = +query.from;
-      const to = +query.to;
+    } else if (query.gte || query.gt || query.lte || query.lt) {
+      if (query.gte) {
+        where.dueDate = {
+          gte: query.gte,
+        };
+      } else if (query.gt) {
+        where.dueDate = {
+          gt: query.gt,
+        };
+      }
 
-      if (from && to) {
-        where.dueDate = {
-          gte: new Date(from).toISOString(),
-          lte: new Date(to).toISOString(),
-        };
-      } else if (from) {
-        where.dueDate = {
-          gte: new Date(from).toISOString(),
-        };
-      } else if (to) {
-        where.dueDate = {
-          lte: new Date(to).toISOString(),
-        };
+      if (query.lte) {
+        where.dueDate = Object.assign(
+          { ...(where.dueDate as Prisma.DateTimeNullableFilter) },
+          { lte: query.lte },
+        );
+      } else if (query.lt) {
+        where.dueDate = Object.assign(
+          { ...(where.dueDate as Prisma.DateTimeNullableFilter) },
+          { lt: query.lt },
+        );
+      }
+
+      if (query.gte) {
+        where.dueDate = Object.assign(
+          { ...(where.dueDate as Prisma.DateTimeNullableFilter) },
+          { gte: query.gte },
+        );
+      } else if (query.gt) {
+        where.dueDate = Object.assign(
+          { ...(where.dueDate as Prisma.DateTimeNullableFilter) },
+          { gt: query.gt },
+        );
       }
     }
 
@@ -204,6 +222,7 @@ export class TasksController {
     try {
       return await this.tasksService.duplicate(taskId);
     } catch (error) {
+      this.logger.error(error);
       throw new BadRequestException();
     }
   }
@@ -257,6 +276,7 @@ export class TasksController {
         },
       });
     } catch (error) {
+      this.logger.error(error);
       throw new NotFoundException();
     }
   }
@@ -285,6 +305,7 @@ export class TasksController {
         },
       });
     } catch (error) {
+      this.logger.error(error);
       throw new BadRequestException();
     }
   }
@@ -312,6 +333,7 @@ export class TasksController {
         },
       });
     } catch (error) {
+      this.logger.error(error);
       throw new NotFoundException();
     }
   }
