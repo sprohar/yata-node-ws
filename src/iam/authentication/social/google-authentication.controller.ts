@@ -1,4 +1,5 @@
 import { Body, Controller, Post, Res } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import {
   authCookieOptions,
@@ -10,6 +11,7 @@ import { GoogleAuthenticationService } from './google-authentication.service';
 import { GoogleOAuthDto } from './google-oauth.dto';
 
 @Public()
+@ApiTags('Google')
 @Controller('auth/google')
 export class GoogleAuthenticationController {
   constructor(
