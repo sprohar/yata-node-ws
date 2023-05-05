@@ -1,13 +1,20 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
+
   constructor(private prisma: PrismaService) {}
 
   async create(args: Prisma.UserCreateArgs) {
-    return await this.prisma.user.create(args);
+    try {
+      return await this.prisma.user.create(args);
+    } catch (error) {
+      this.logger.error(error);
+      throw new BadRequestException();
+    }
   }
 
   delete(args: Prisma.UserDeleteArgs) {
