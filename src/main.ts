@@ -45,7 +45,11 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
   app.enableCors({
     credentials: true,
-    origin: configService.get<string>('CLIENT_ORIGIN_URL'),
+    origin: [
+      configService.get<string>('CLIENT_ORIGIN_URL'),
+      'http://localhost',
+      'http://localhost:4200',
+    ],
     methods: ['DELETE', 'GET', 'POST', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Authorization', 'Content-Type'],
     maxAge: 86400,
