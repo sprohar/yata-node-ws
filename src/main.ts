@@ -5,6 +5,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
+import { PrismaService } from './prisma/prisma.service';
 
 function checkEnvironment(configService: ConfigService) {
   const requiredEnvVars = [
@@ -77,6 +78,9 @@ async function bootstrap() {
       },
     }),
   );
+
+  const prismaService = app.get(PrismaService);
+  prismaService.enableShutdownHooks(app);
 
   const config = new DocumentBuilder()
     .setTitle('YATA')
