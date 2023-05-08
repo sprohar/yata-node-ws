@@ -8,7 +8,7 @@ BEGIN
   SET preferences = '{"isDarkTheme":true,"defaultDueDateToday":true,"taskView":0}'::jsonb
   WHERE user_id = NEW.user_id;
 
-	INSERT INTO public.project(name, user_id)
+	INSERT INTO public.projects(name, user_id)
 		 VALUES ('Inbox', NEW.user_id), 
             ('Work', NEW.user_id), 
             ('Personal', NEW.user_id), 
