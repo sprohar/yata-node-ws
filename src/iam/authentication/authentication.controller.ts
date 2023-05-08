@@ -60,7 +60,7 @@ export class AuthenticationController {
     return {
       accessToken: authServiceRes.accessToken,
       user: authServiceRes.user,
-    };
+    } as AuthResponseDto;
   }
 
   @Post('sign-up')
@@ -75,8 +75,7 @@ export class AuthenticationController {
 
     res.cookie(COOKIE_REFRESH_TOKEN_KEY, refreshToken, authCookieOptions);
 
-    const authResponseDto: AuthResponseDto = { accessToken, user };
-    return authResponseDto;
+    return { accessToken, user } as AuthResponseDto;
   }
 
   @Post('sign-in')
@@ -91,7 +90,6 @@ export class AuthenticationController {
 
     res.cookie(COOKIE_REFRESH_TOKEN_KEY, refreshToken, authCookieOptions);
 
-    const authResponseDto: AuthResponseDto = { accessToken, user };
-    return authResponseDto;
+    return { accessToken, user } as AuthResponseDto;
   }
 }

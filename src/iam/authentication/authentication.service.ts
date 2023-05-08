@@ -6,7 +6,6 @@ import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { randomUUID } from 'crypto';
 import { PrismaClientErrorCode } from '../../prisma/enums/prisma-client-error-code.enum';
 import { TaskView } from '../../users/enums';
-import { UserPreference } from '../../users/interfaces/';
 import { UsersService } from '../../users/users.service';
 import { ActiveUserData } from '../active-user-data';
 import jwtConfig from '../config/jwt.config';
